@@ -1,0 +1,1146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "mysql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+// ============================================================
+// STORE, SETTINGS, HOURS, CLOSURES, SLOTS & DELIVERY ZONES
+// ============================================================
+
+model Store {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  abn              String   @default("")
+  phone            String   @default("")
+  email            String   @default("")
+  address          String   @default("")
+  timezone         String   @default("Australia/Sydney")
+  currency         String   @default("AUD")
+  gstRatePct       Int      @default(10)
+  gstRegistered    Boolean  @default(true)
+  cardSurchargeBps Int      @default(0) // basis points, e.g. 150 = 1.50%
+  holidaySurchargeBps Int   @default(0)
+  soloMode         Boolean  @default(false)
+  autoAcceptWeb    Boolean  @default(true)
+  onlinePaused     Boolean  @default(false)
+  pauseMessage     String?  @db.VarChar(500)
+  pauseResumeAt    DateTime? @db.DateTime(3)
+  defaultStationId String?
+  negativeStockPolicy String @default("warn") // warn | block
+  brandingJson     Json?    // theme token overrides
+  createdAt        DateTime @default(now()) @db.DateTime(3)
+  updatedAt        DateTime @updatedAt @db.DateTime(3)
+
+  openingHours     OpeningHours[]
+  closures         Closure[]
+  timeSlotRules    TimeSlotRule[]
+  deliveryZones    DeliveryZone[]
+  stations         Station[]
+  categories       Category[]
+  products         Product[]
+  modifierGroups   ModifierGroup[]
+  inventoryItems   InventoryItem[]
+  vendors          Vendor[]
+  purchaseOrders   PurchaseOrder[]
+  orders           Order[]
+  orderCounters    OrderCounter[]
+  deals            Deal[]
+  coupons          Coupon[]
+  cashSessions     CashSession[]
+  receiptTemplates ReceiptTemplate[]
+  expenses         Expense[]
+  financialTxns    FinancialTransaction[]
+  staffUsers       StaffUser[]
+  roles            Role[]
+  devices          Device[]
+  cmsHomeBlocks    CmsHomeBlock[]
+  cmsNavItems      CmsNavItem[]
+  cmsPages         CmsPage[]
+  announcements    Announcement[]
+  loyaltyRules     LoyaltyRule[]
+}
+
+model OpeningHours {
+  id        String   @id @default(cuid())
+  storeId   String
+  dayOfWeek Int      // 0=Sun..6=Sat
+  openTime  String   // "11:00"
+  closeTime String   // "23:00" or "02:00" (late night)
+  isClosed  Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.DateTime(3)
+  updatedAt DateTime @updatedAt @db.DateTime(3)
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@unique([storeId, dayOfWeek])
+  @@index([storeId])
+}
+
+model Closure {
+  id        String   @id @default(cuid())
+  storeId   String
+  title     String
+  startsAt  DateTime @db.DateTime(3)
+  endsAt    DateTime @db.DateTime(3)
+  isHoliday Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.DateTime(3)
+  updatedAt DateTime @updatedAt @db.DateTime(3)
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@index([storeId, startsAt, endsAt])
+}
+
+model TimeSlotRule {
+  id                 String   @id @default(cuid())
+  storeId            String
+  fulfilment         String   // PICKUP | DELIVERY
+  slotMinutes        Int      @default(15)
+  minLeadMinutes     Int      @default(30)
+  maxDaysAhead       Int      @default(7)
+  maxOrdersPerSlot   Int      @default(10)
+  maxItemsPerSlot    Int      @default(40)
+  createdAt          DateTime @default(now()) @db.DateTime(3)
+  updatedAt          DateTime @updatedAt @db.DateTime(3)
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@unique([storeId, fulfilment])
+  @@index([storeId])
+}
+
+model DeliveryZone {
+  id            String   @id @default(cuid())
+  storeId       String
+  name          String
+  postcodes     String   @db.Text // comma-separated AU postcodes e.g. "2000,2010,2015"
+  feeCents      Int      @default(500)
+  minOrderCents Int      @default(2000)
+  travelMinutes Int      @default(20)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @db.DateTime(3)
+  updatedAt     DateTime @updatedAt @db.DateTime(3)
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@index([storeId, active])
+}
+
+// ============================================================
+// AUTH, RBAC, STAFF, DEVICES, CUSTOMERS
+// ============================================================
+
+model Permission {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  module      String
+  label       String
+  description String   @default("")
+  createdAt   DateTime @default(now()) @db.DateTime(3)
+
+  rolePermissions RolePermission[]
+  userGrants      UserPermissionGrant[]
+
+  @@index([module])
+}
+
+model Role {
+  id             String   @id @default(cuid())
+  storeId        String
+  name           String
+  description    String   @default("")
+  isSystem       Boolean  @default(false) // Super Admin locked
+  maxDiscountPct Int      @default(0)
+  createdAt      DateTime @default(now()) @db.DateTime(3)
+  updatedAt      DateTime @updatedAt @db.DateTime(3)
+
+  store       Store            @relation(fields: [storeId], references: [id])
+  permissions RolePermission[]
+  staffUsers  StaffUser[]
+
+  @@unique([storeId, name])
+  @@index([storeId])
+}
+
+model RolePermission {
+  id           String @id @default(cuid())
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model StaffUser {
+  id             String    @id @default(cuid())
+  storeId        String
+  email          String    @unique
+  name           String
+  passwordHash   String
+  pinHash        String?
+  pinFailedCount Int       @default(0)
+  pinLockedUntil DateTime? @db.DateTime(3)
+  roleId         String
+  active         Boolean   @default(true)
+  sessionVersion Int       @default(1)
+  lastLoginAt    DateTime? @db.DateTime(3)
+  createdAt      DateTime  @default(now()) @db.DateTime(3)
+  updatedAt      DateTime  @updatedAt @db.DateTime(3)
+
+  store         Store                 @relation(fields: [storeId], references: [id])
+  role          Role                  @relation(fields: [roleId], references: [id])
+  grants        UserPermissionGrant[]
+  sessions      StaffSession[]
+  createdOrders Order[]               @relation("OrderCreatedBy")
+  paymentsTaken Payment[]             @relation("PaymentTakenBy")
+  cashSessions  CashSession[]
+
+  @@index([storeId, active])
+  @@index([roleId])
+}
+
+model UserPermissionGrant {
+  id           String @id @default(cuid())
+  staffUserId  String
+  permissionId String
+
+  staffUser  StaffUser  @relation(fields: [staffUserId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([staffUserId, permissionId])
+  @@index([staffUserId])
+  @@index([permissionId])
+}
+
+model StaffSession {
+  id             String   @id @default(cuid())
+  tokenHash      String   @unique
+  staffUserId    String
+  sessionVersion Int
+  deviceId       String?
+  expiresAt      DateTime @db.DateTime(3)
+  lastActiveAt   DateTime @default(now()) @db.DateTime(3)
+  ip             String?
+  userAgent      String?  @db.VarChar(500)
+  createdAt      DateTime @default(now()) @db.DateTime(3)
+
+  staffUser StaffUser @relation(fields: [staffUserId], references: [id])
+
+  @@index([staffUserId])
+  @@index([expiresAt])
+}
+
+model Device {
+  id          String    @id @default(cuid())
+  storeId     String
+  name        String
+  kind        String    // TILL | STATION
+  stationId   String?
+  tokenHash   String    @unique
+  pairingCode String?   @unique
+  active      Boolean   @default(true)
+  lastSeenAt  DateTime? @db.DateTime(3)
+  createdAt   DateTime  @default(now()) @db.DateTime(3)
+  updatedAt   DateTime  @updatedAt @db.DateTime(3)
+
+  store   Store    @relation(fields: [storeId], references: [id])
+  station Station? @relation(fields: [stationId], references: [id])
+
+  @@index([storeId, kind, active])
+  @@index([stationId])
+}
+
+model Customer {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String
+  phone          String    @default("")
+  passwordHash   String?
+  emailVerified  Boolean   @default(false)
+  sessionVersion Int       @default(1)
+  createdAt      DateTime  @default(now()) @db.DateTime(3)
+  updatedAt      DateTime  @updatedAt @db.DateTime(3)
+
+  sessions       CustomerSession[]
+  addresses      CustomerAddress[]
+  favourites     CustomerFavourite[]
+  orders         Order[]
+  loyaltyAccount LoyaltyAccount?
+  couponRedemptions CouponRedemption[]
+}
+
+model CustomerSession {
+  id             String   @id @default(cuid())
+  tokenHash      String   @unique
+  customerId     String
+  sessionVersion Int
+  expiresAt      DateTime @db.DateTime(3)
+  createdAt      DateTime @default(now()) @db.DateTime(3)
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([customerId])
+  @@index([expiresAt])
+}
+
+model CustomerAddress {
+  id         String   @id @default(cuid())
+  customerId String
+  label      String   @default("Home")
+  line1      String
+  line2      String?
+  suburb     String
+  state      String   @default("NSW")
+  postcode   String
+  notes      String?
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now()) @db.DateTime(3)
+  updatedAt  DateTime @updatedAt @db.DateTime(3)
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([customerId])
+}
+
+model CustomerFavourite {
+  id         String   @id @default(cuid())
+  customerId String
+  productId  String
+  createdAt  DateTime @default(now()) @db.DateTime(3)
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@unique([customerId, productId])
+  @@index([customerId])
+  @@index([productId])
+}
+
+// ============================================================
+// CATALOGUE: STATIONS, CATEGORIES, PRODUCTS, VARIANTS, MODIFIERS
+// ============================================================
+
+model Station {
+  id           String   @id @default(cuid())
+  storeId      String
+  code         String
+  name         String
+  color        String   @default("#C8401E")
+  sortOrder    Int      @default(0)
+  autoComplete Boolean  @default(false) // true for Counter/Drinks
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @db.DateTime(3)
+  updatedAt    DateTime @updatedAt @db.DateTime(3)
+
+  store      Store           @relation(fields: [storeId], references: [id])
+  categories Category[]
+  products   Product[]
+  variants   Variant[]
+  tickets    StationTicket[]
+  devices    Device[]
+
+  @@unique([storeId, code])
+  @@index([storeId, sortOrder])
+}
+
+model Category {
+  id               String   @id @default(cuid())
+  storeId          String
+  name             String
+  slug             String
+  description      String   @default("")
+  imageUrl         String?
+  sortOrder        Int      @default(0)
+  showInMenu       Boolean  @default(true)
+  defaultStationId String?
+  createdAt        DateTime @default(now()) @db.DateTime(3)
+  updatedAt        DateTime @updatedAt @db.DateTime(3)
+
+  store          Store     @relation(fields: [storeId], references: [id])
+  defaultStation Station?  @relation(fields: [defaultStationId], references: [id])
+  products       Product[]
+
+  @@unique([storeId, slug])
+  @@index([storeId, sortOrder])
+  @@index([defaultStationId])
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  storeId     String
+  categoryId  String
+  stationId   String?
+  name        String
+  slug        String
+  description String   @default("") @db.VarChar(1000)
+  imageUrl    String?
+  tagsJson    Json?    // ["halal", "spicy", "veg", "popular"]
+  allergensJson Json?  // ["gluten", "dairy", "sesame"]
+  spicyLevel  Int      @default(0) // 0..3
+  taxCode     String   @default("GST") // GST | GST_FREE
+  visibility  String   @default("BOTH") // WEB | TILL | BOTH
+  active      Boolean  @default(true)
+  soldOut     Boolean  @default(false) // 86 toggle
+  isBestSeller Boolean @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now()) @db.DateTime(3)
+  updatedAt   DateTime @updatedAt @db.DateTime(3)
+
+  store          Store                  @relation(fields: [storeId], references: [id])
+  category       Category               @relation(fields: [categoryId], references: [id])
+  station        Station?               @relation(fields: [stationId], references: [id])
+  variants       Variant[]
+  modifierGroups ProductModifierGroup[]
+  favourites     CustomerFavourite[]
+
+  @@unique([storeId, slug])
+  @@index([storeId, categoryId, active])
+  @@index([stationId])
+}
+
+model Variant {
+  id          String   @id @default(cuid())
+  productId   String
+  stationId   String?
+  name        String
+  sku         String
+  priceCents  Int
+  prepMinutes Int      @default(8)
+  active      Boolean  @default(true)
+  soldOut     Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now()) @db.DateTime(3)
+  updatedAt   DateTime @updatedAt @db.DateTime(3)
+
+  product     Product      @relation(fields: [productId], references: [id])
+  station     Station?     @relation(fields: [stationId], references: [id])
+  recipeLines RecipeLine[]
+  dealItems   DealItem[]
+
+  @@unique([productId, name])
+  @@index([productId, sortOrder])
+  @@index([stationId])
+  @@index([sku])
+}
+
+model ModifierGroup {
+  id        String   @id @default(cuid())
+  storeId   String
+  name      String
+  minSelect Int      @default(0)
+  maxSelect Int      @default(1)
+  required  Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now()) @db.DateTime(3)
+  updatedAt DateTime @updatedAt @db.DateTime(3)
+
+  store    Store                  @relation(fields: [storeId], references: [id])
+  options  ModifierOption[]
+  products ProductModifierGroup[]
+
+  @@index([storeId, sortOrder])
+}
+
+model ModifierOption {
+  id              String   @id @default(cuid())
+  modifierGroupId String
+  name            String
+  priceDeltaCents Int      @default(0)
+  isDefault       Boolean  @default(false)
+  active          Boolean  @default(true)
+  soldOut         Boolean  @default(false)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now()) @db.DateTime(3)
+  updatedAt       DateTime @updatedAt @db.DateTime(3)
+
+  group       ModifierGroup @relation(fields: [modifierGroupId], references: [id])
+  recipeLines RecipeLine[]
+
+  @@index([modifierGroupId, sortOrder])
+}
+
+model ProductModifierGroup {
+  id              String @id @default(cuid())
+  productId       String
+  modifierGroupId String
+  sortOrder       Int    @default(0)
+
+  product       Product       @relation(fields: [productId], references: [id])
+  modifierGroup ModifierGroup @relation(fields: [modifierGroupId], references: [id])
+
+  @@unique([productId, modifierGroupId])
+  @@index([productId])
+  @@index([modifierGroupId])
+}
+
+// ============================================================
+// INVENTORY, RECIPES, VENDORS, PURCHASING
+// ============================================================
+
+model InventoryItem {
+  id                String   @id @default(cuid())
+  storeId           String
+  code              String
+  name              String
+  description       String   @default("")
+  unit              String   // kg, g, L, ml, piece, unit, packet, box
+  onHand            Decimal  @default(0) @db.Decimal(12, 3)
+  minThreshold      Decimal  @default(5) @db.Decimal(12, 3)
+  costPerUnitCents  Int      @default(0)
+  preferredVendorId String?
+  notes             String   @default("")
+  createdAt         DateTime @default(now()) @db.DateTime(3)
+  updatedAt         DateTime @updatedAt @db.DateTime(3)
+
+  store        Store                  @relation(fields: [storeId], references: [id])
+  vendor       Vendor?                @relation(fields: [preferredVendorId], references: [id])
+  recipeLines  RecipeLine[]
+  transactions InventoryTransaction[]
+  poLines      PurchaseOrderLine[]
+
+  @@unique([storeId, code])
+  @@index([storeId])
+  @@index([preferredVendorId])
+}
+
+model RecipeLine {
+  id               String  @id @default(cuid())
+  variantId        String?
+  modifierOptionId String?
+  inventoryItemId  String
+  quantity         Decimal @db.Decimal(12, 3)
+
+  variant        Variant?        @relation(fields: [variantId], references: [id])
+  modifierOption ModifierOption? @relation(fields: [modifierOptionId], references: [id])
+  inventoryItem  InventoryItem   @relation(fields: [inventoryItemId], references: [id])
+
+  @@index([variantId])
+  @@index([modifierOptionId])
+  @@index([inventoryItemId])
+}
+
+model InventoryTransaction {
+  id              String   @id @default(cuid())
+  inventoryItemId String
+  kind            String   // PURCHASE_RECEIPT | ORDER_RESERVE | ORDER_RELEASE | ADJUSTMENT | WASTE | COUNT | UNIT_CONVERSION
+  quantity        Decimal  @db.Decimal(12, 3) // signed: positive in, negative out
+  unitCostCents   Int      @default(0)
+  sourceType      String   // ORDER | PO_RECEIPT | MANUAL | WASTE | COUNT
+  sourceId        String
+  actorId         String?
+  reason          String   @default("")
+  createdAt       DateTime @default(now()) @db.DateTime(3)
+
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id])
+
+  @@unique([sourceType, sourceId, inventoryItemId, kind])
+  @@index([inventoryItemId, createdAt])
+  @@index([sourceType, sourceId])
+}
+
+model Vendor {
+  id        String   @id @default(cuid())
+  storeId   String
+  name      String
+  abn       String   @default("")
+  contact   String   @default("")
+  email     String   @default("")
+  phone     String   @default("")
+  address   String   @default("")
+  notes     String   @default("")
+  createdAt DateTime @default(now()) @db.DateTime(3)
+  updatedAt DateTime @updatedAt @db.DateTime(3)
+
+  store          Store           @relation(fields: [storeId], references: [id])
+  items          InventoryItem[]
+  purchaseOrders PurchaseOrder[]
+
+  @@index([storeId])
+}
+
+model PurchaseOrder {
+  id            String    @id @default(cuid())
+  storeId       String
+  vendorId      String
+  number        String
+  status        String    @default("ORDERED") // DRAFT | ORDERED | PARTIALLY_RECEIVED | RECEIVED | CLOSED
+  invoiceRef    String    @default("")
+  totalCents    Int       @default(0)
+  notes         String    @default("")
+  orderedAt     DateTime  @default(now()) @db.DateTime(3)
+  createdAt     DateTime  @default(now()) @db.DateTime(3)
+  updatedAt     DateTime  @updatedAt @db.DateTime(3)
+
+  store    Store               @relation(fields: [storeId], references: [id])
+  vendor   Vendor              @relation(fields: [vendorId], references: [id])
+  lines    PurchaseOrderLine[]
+  receipts GoodsReceipt[]
+
+  @@unique([storeId, number])
+  @@index([storeId, status])
+  @@index([vendorId])
+}
+
+model PurchaseOrderLine {
+  id              String  @id @default(cuid())
+  purchaseOrderId String
+  inventoryItemId String
+  orderedQty      Decimal @db.Decimal(12, 3)
+  receivedQty     Decimal @default(0) @db.Decimal(12, 3)
+  unitCostCents   Int     @default(0)
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id])
+
+  @@index([purchaseOrderId])
+  @@index([inventoryItemId])
+}
+
+model GoodsReceipt {
+  id              String   @id @default(cuid())
+  purchaseOrderId String
+  invoiceRef      String   @default("")
+  receivedById    String?
+  notes           String   @default("")
+  createdAt       DateTime @default(now()) @db.DateTime(3)
+
+  purchaseOrder PurchaseOrder      @relation(fields: [purchaseOrderId], references: [id])
+  lines         GoodsReceiptLine[]
+
+  @@index([purchaseOrderId])
+}
+
+model GoodsReceiptLine {
+  id                  String  @id @default(cuid())
+  goodsReceiptId      String
+  purchaseOrderLineId String
+  inventoryItemId     String
+  receivedQty         Decimal @db.Decimal(12, 3)
+  unitCostCents       Int     @default(0)
+
+  goodsReceipt GoodsReceipt @relation(fields: [goodsReceiptId], references: [id])
+
+  @@index([goodsReceiptId])
+}
+
+// ============================================================
+// ORDERS, STATION TICKETS, PAYMENTS, REFUNDS, CASH SESSIONS
+// ============================================================
+
+model OrderCounter {
+  id      String @id @default(cuid())
+  storeId String
+  dateKey String // YYYYMMDD in store tz
+  seq     Int    @default(0)
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@unique([storeId, dateKey])
+}
+
+model Order {
+  id              String    @id @default(cuid())
+  publicId        String    @unique
+  number          String    // #SK-0001
+  storeId         String
+  channel         String    // WEB | TILL | PHONE | ADMIN
+  fulfilment      String    // DINE_IN | PICKUP | DELIVERY
+  tableNumber     String?
+  covers          Int?
+  timing          String    @default("ASAP") // ASAP | SCHEDULED
+  scheduledFor    DateTime? @db.DateTime(3)
+  releaseAt       DateTime  @default(now()) @db.DateTime(3)
+  promisedAt      DateTime  @default(now()) @db.DateTime(3)
+  status          String    // PENDING_PAYMENT | PLACED | SCHEDULED | IN_KITCHEN | PREPARING | READY | SERVED | COLLECTED | OUT_FOR_DELIVERY | COMPLETED | CANCELLED | PARTIALLY_REFUNDED | REFUNDED
+  paymentStatus   String    @default("UNPAID") // UNPAID | PARTIALLY_PAID | PAID | PARTIALLY_REFUNDED | REFUNDED
+  customerId      String?
+  customerName    String    @default("Walk-in")
+  customerPhone   String    @default("")
+  customerEmail   String    @default("")
+  deliveryAddress String?   @db.Text
+  deliverySuburb  String?
+  deliveryPostcode String?
+  driverName      String?
+  notes           String    @default("") @db.VarChar(1000)
+  subtotalCents   Int       @default(0)
+  discountCents   Int       @default(0)
+  discountReason  String?
+  couponCode      String?
+  deliveryFeeCents Int      @default(0)
+  surchargeCents  Int       @default(0)
+  gstCents        Int       @default(0)
+  totalCents      Int       @default(0)
+  amountPaidCents Int       @default(0)
+  currentRound    Int       @default(1)
+  idempotencyKey  String    @unique
+  trackingToken   String
+  createdById     String?
+  servedById      String?
+  dispatchedById  String?
+  cancelReason    String?
+  sentToKitchenAt DateTime? @db.DateTime(3)
+  readyAt         DateTime? @db.DateTime(3)
+  servedAt        DateTime? @db.DateTime(3)
+  collectedAt     DateTime? @db.DateTime(3)
+  dispatchedAt    DateTime? @db.DateTime(3)
+  completedAt     DateTime? @db.DateTime(3)
+  cancelledAt     DateTime? @db.DateTime(3)
+  createdAt       DateTime  @default(now()) @db.DateTime(3)
+  updatedAt       DateTime  @updatedAt @db.DateTime(3)
+
+  store          Store                @relation(fields: [storeId], references: [id])
+  customer       Customer?            @relation(fields: [customerId], references: [id])
+  createdBy      StaffUser?           @relation("OrderCreatedBy", fields: [createdById], references: [id])
+  items          OrderItem[]
+  tickets        StationTicket[]
+  payments       Payment[]
+  refunds        Refund[]
+  statusHistory  OrderStatusHistory[]
+  loyaltyTxns    LoyaltyTransaction[]
+  notifications  NotificationLog[]
+
+  @@index([storeId, status, createdAt])
+  @@index([storeId, paymentStatus])
+  @@index([storeId, releaseAt])
+  @@index([storeId, scheduledFor])
+  @@index([customerId, createdAt])
+  @@index([createdById])
+}
+
+model OrderItem {
+  id             String  @id @default(cuid())
+  orderId        String
+  productId      String?
+  variantId      String?
+  stationId      String
+  stationName    String
+  productName    String
+  variantName    String
+  modifiersJson  Json?   // [{ groupName, optionName, optionId, priceDeltaCents }]
+  quantity       Int     @default(1)
+  unitPriceCents Int
+  lineTotalCents Int
+  taxCode        String  @default("GST")
+  notes          String  @default("")
+  round          Int     @default(1)
+  ticketId       String?
+
+  order  Order          @relation(fields: [orderId], references: [id])
+  ticket StationTicket? @relation(fields: [ticketId], references: [id])
+
+  @@index([orderId])
+  @@index([ticketId])
+  @@index([stationId])
+}
+
+model StationTicket {
+  id             String    @id @default(cuid())
+  orderId        String
+  stationId      String
+  round          Int       @default(1)
+  status         String    @default("NEW") // NEW | PREPARING | READY
+  releaseAt      DateTime  @default(now()) @db.DateTime(3)
+  preparingAt    DateTime? @db.DateTime(3)
+  readyAt        DateTime? @db.DateTime(3)
+  preparedById   String?
+  readyById      String?
+  bumpedFromTill Boolean   @default(false)
+  createdAt      DateTime  @default(now()) @db.DateTime(3)
+  updatedAt      DateTime  @updatedAt @db.DateTime(3)
+
+  order   Order       @relation(fields: [orderId], references: [id])
+  station Station     @relation(fields: [stationId], references: [id])
+  items   OrderItem[]
+
+  @@unique([orderId, stationId, round])
+  @@index([stationId, status, releaseAt])
+  @@index([orderId, status])
+}
+
+model OrderStatusHistory {
+  id        String   @id @default(cuid())
+  orderId   String
+  fromState String?
+  toState   String
+  actorType String   // SYSTEM | STAFF | CUSTOMER | DEVICE
+  actorId   String?
+  actorName String   @default("System")
+  note      String   @default("")
+  createdAt DateTime @default(now()) @db.DateTime(3)
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([orderId, createdAt])
+}
+
+model Payment {
+  id             String   @id @default(cuid())
+  orderId        String
+  method         String   // CASH | CARD_EFTPOS | CARD_ONLINE | OTHER
+  amountCents    Int
+  tenderedCents  Int?
+  changeCents    Int?
+  tipCents       Int      @default(0)
+  reference      String?
+  cardBrand      String?
+  cardLast4      String?
+  stripePiId     String?
+  status         String   @default("SUCCEEDED") // SUCCEEDED | FAILED | REFUNDED
+  idempotencyKey String   @unique
+  takenById      String?
+  cashSessionId  String?
+  createdAt      DateTime @default(now()) @db.DateTime(3)
+
+  order       Order        @relation(fields: [orderId], references: [id])
+  takenBy     StaffUser?   @relation("PaymentTakenBy", fields: [takenById], references: [id])
+  cashSession CashSession? @relation(fields: [cashSessionId], references: [id])
+
+  @@index([orderId])
+  @@index([cashSessionId])
+  @@index([takenById])
+  @@index([stripePiId])
+}
+
+model Refund {
+  id             String   @id @default(cuid())
+  orderId        String
+  amountCents    Int
+  reason         String
+  stripeRefundId String?
+  actorId        String?
+  createdAt      DateTime @default(now()) @db.DateTime(3)
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+}
+
+model StripeEvent {
+  id          String   @id // Stripe event ID evt_...
+  type        String
+  processedAt DateTime @default(now()) @db.DateTime(3)
+}
+
+model CashSession {
+  id                String    @id @default(cuid())
+  storeId           String
+  openedById        String
+  openingFloatCents Int       @default(0)
+  countedCashCents  Int?
+  expectedCashCents Int?
+  varianceCents     Int?
+  status            String    @default("OPEN") // OPEN | CLOSED
+  openedAt          DateTime  @default(now()) @db.DateTime(3)
+  closedAt          DateTime? @db.DateTime(3)
+  notes             String    @default("")
+
+  store     Store          @relation(fields: [storeId], references: [id])
+  openedBy  StaffUser      @relation(fields: [openedById], references: [id])
+  payments  Payment[]
+  movements CashMovement[]
+
+  @@index([storeId, status])
+  @@index([openedById])
+}
+
+model CashMovement {
+  id            String   @id @default(cuid())
+  cashSessionId String
+  kind          String   // IN | OUT
+  amountCents   Int
+  reason        String
+  actorId       String?
+  createdAt     DateTime @default(now()) @db.DateTime(3)
+
+  cashSession CashSession @relation(fields: [cashSessionId], references: [id])
+
+  @@index([cashSessionId])
+}
+
+// ============================================================
+// DEALS, COUPONS, LOYALTY
+// ============================================================
+
+model Deal {
+  id          String    @id @default(cuid())
+  storeId     String
+  name        String
+  slug        String
+  description String    @default("") @db.VarChar(1000)
+  imageUrl    String?
+  priceCents  Int
+  badgeText   String    @default("HOT DEAL")
+  channels    String    @default("BOTH") // WEB | TILL | BOTH
+  startsAt    DateTime? @db.DateTime(3)
+  endsAt      DateTime? @db.DateTime(3)
+  active      Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now()) @db.DateTime(3)
+  updatedAt   DateTime  @updatedAt @db.DateTime(3)
+
+  store Store      @relation(fields: [storeId], references: [id])
+  items DealItem[]
+
+  @@unique([storeId, slug])
+  @@index([storeId, active])
+}
+
+model DealItem {
+  id        String @id @default(cuid())
+  dealId    String
+  variantId String
+  quantity  Int    @default(1)
+
+  deal    Deal    @relation(fields: [dealId], references: [id])
+  variant Variant @relation(fields: [variantId], references: [id])
+
+  @@index([dealId])
+  @@index([variantId])
+}
+
+model Coupon {
+  id              String    @id @default(cuid())
+  storeId         String
+  code            String
+  kind            String    // PERCENT | FIXED
+  value           Int       // pct (e.g. 15) or cents (e.g. 500)
+  minSpendCents   Int       @default(0)
+  maxUses         Int?
+  usedCount       Int       @default(0)
+  firstOrderOnly  Boolean   @default(false)
+  startsAt        DateTime? @db.DateTime(3)
+  endsAt          DateTime? @db.DateTime(3)
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now()) @db.DateTime(3)
+  updatedAt       DateTime  @updatedAt @db.DateTime(3)
+
+  store       Store              @relation(fields: [storeId], references: [id])
+  redemptions CouponRedemption[]
+
+  @@unique([storeId, code])
+  @@index([storeId, active])
+}
+
+model CouponRedemption {
+  id         String   @id @default(cuid())
+  couponId   String
+  orderId    String
+  customerId String?
+  createdAt  DateTime @default(now()) @db.DateTime(3)
+
+  coupon   Coupon    @relation(fields: [couponId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+
+  @@unique([couponId, orderId])
+  @@index([couponId])
+  @@index([customerId])
+}
+
+model LoyaltyRule {
+  id                   String   @id @default(cuid())
+  storeId              String
+  pointsPerDollar      Int      @default(1)
+  redeemPointsBlock    Int      @default(100)
+  redeemValueCents     Int      @default(500) // 100 pts = $5
+  active               Boolean  @default(true)
+  createdAt            DateTime @default(now()) @db.DateTime(3)
+  updatedAt            DateTime @updatedAt @db.DateTime(3)
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@index([storeId])
+}
+
+model LoyaltyAccount {
+  id         String   @id @default(cuid())
+  customerId String   @unique
+  balance    Int      @default(0)
+  updatedAt  DateTime @updatedAt @db.DateTime(3)
+
+  customer     Customer             @relation(fields: [customerId], references: [id])
+  transactions LoyaltyTransaction[]
+}
+
+model LoyaltyTransaction {
+  id               String   @id @default(cuid())
+  loyaltyAccountId String
+  orderId          String?
+  kind             String   // EARN | REDEEM | REVERSAL | ADJUSTMENT
+  points           Int      // signed
+  note             String   @default("")
+  createdAt        DateTime @default(now()) @db.DateTime(3)
+
+  account LoyaltyAccount @relation(fields: [loyaltyAccountId], references: [id])
+  order   Order?         @relation(fields: [orderId], references: [id])
+
+  @@unique([orderId, kind])
+  @@index([loyaltyAccountId, createdAt])
+}
+
+// ============================================================
+// FINANCE, RECEIPTS, CMS, NOTIFICATIONS, AUDIT, SECRETS
+// ============================================================
+
+model ReceiptTemplate {
+  id          String   @id @default(cuid())
+  storeId     String
+  version     Int      @default(1)
+  headerText  String   @default("TAX INVOICE")
+  footerText  String   @default("Thanks for dining with Star Kebab! Halal certified.")
+  showAbn     Boolean  @default(true)
+  showGstLine Boolean  @default(true)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.DateTime(3)
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@index([storeId, active])
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  storeId     String
+  category    String
+  description String
+  amountCents Int
+  incurredAt  DateTime @default(now()) @db.DateTime(3)
+  actorId     String?
+  createdAt   DateTime @default(now()) @db.DateTime(3)
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@index([storeId, incurredAt])
+}
+
+model FinancialTransaction {
+  id          String   @id @default(cuid())
+  storeId     String
+  direction   String   // INFLOW | OUTFLOW
+  category    String   // SALE | REFUND | VENDOR_PAYMENT | EXPENSE
+  method      String   // CASH | CARD_EFTPOS | CARD_ONLINE | BANK
+  amountCents Int
+  sourceType  String   // PAYMENT | REFUND | EXPENSE | PO
+  sourceId    String
+  note        String   @default("")
+  createdAt   DateTime @default(now()) @db.DateTime(3)
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@unique([sourceType, sourceId, direction])
+  @@index([storeId, createdAt])
+}
+
+model CmsNavItem {
+  id        String  @id @default(cuid())
+  storeId   String
+  location  String  // HEADER | FOOTER
+  label     String
+  href      String
+  sortOrder Int     @default(0)
+  visible   Boolean @default(true)
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@index([storeId, location, sortOrder])
+}
+
+model CmsHomeBlock {
+  id        String  @id @default(cuid())
+  storeId   String
+  kind      String  // HERO | DEALS | CATEGORIES | BEST_SELLERS | LOYALTY | WHY_US | TESTIMONIALS | HOURS
+  title     String  @default("")
+  subtitle  String  @default("")
+  configJson Json?
+  sortOrder Int     @default(0)
+  visible   Boolean @default(true)
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@index([storeId, sortOrder])
+}
+
+model CmsPage {
+  id        String   @id @default(cuid())
+  storeId   String
+  slug      String
+  title     String
+  body      String   @db.Text
+  published Boolean  @default(true)
+  updatedAt DateTime @updatedAt @db.DateTime(3)
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@unique([storeId, slug])
+}
+
+model Announcement {
+  id        String    @id @default(cuid())
+  storeId   String
+  text      String
+  linkHref  String?
+  active    Boolean   @default(true)
+  startsAt  DateTime? @db.DateTime(3)
+  endsAt    DateTime? @db.DateTime(3)
+  createdAt DateTime  @default(now()) @db.DateTime(3)
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@index([storeId, active])
+}
+
+model NotificationLog {
+  id        String   @id @default(cuid())
+  orderId   String
+  event     String   // RECEIVED | SCHEDULED | PREPARING | READY | OUT_FOR_DELIVERY | CANCELLED | REFUNDED
+  channel   String   // EMAIL | PUSH | SMS | LIVE
+  recipient String   @default("")
+  status    String   @default("SENT") // SENT | SKIPPED | FAILED
+  detail    String?
+  createdAt DateTime @default(now()) @db.DateTime(3)
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@unique([orderId, event, channel])
+  @@index([createdAt])
+}
+
+model SecretSetting {
+  id         String   @id @default(cuid())
+  storeId    String
+  key        String
+  cipherText String   @db.Text
+  masked     String
+  keyId      String   @default("v1")
+  updatedAt  DateTime @updatedAt @db.DateTime(3)
+
+  @@unique([storeId, key])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorType String   // STAFF | CUSTOMER | DEVICE | SYSTEM
+  actorId   String?
+  actorName String   @default("")
+  action    String
+  entity    String   @default("")
+  entityId  String   @default("")
+  beforeJson Json?
+  afterJson  Json?
+  ip        String?
+  requestId String
+  createdAt DateTime @default(now()) @db.DateTime(3)
+
+  @@index([action, createdAt])
+  @@index([actorId, createdAt])
+  @@index([createdAt])
+}
