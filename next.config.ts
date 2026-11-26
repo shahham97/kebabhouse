@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: false,
   },
+  outputFileTracingIncludes: {
+    '/**': ['./isrgrootx1.pem', './prisma/isrgrootx1.pem'],
+  },
   async headers() {
     return [
       {

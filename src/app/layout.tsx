@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-AU" className={`${barlow.variable} ${jakarta.variable} ${jetbrains.variable}`}>
-      <body className="min-h-screen bg-cream text-char antialiased selection:bg-saffron/40 selection:text-char">
+      <body className="min-h-screen overflow-x-clip bg-cream text-char antialiased selection:bg-saffron/40 selection:text-char">
         {children}
       </body>
     </html>

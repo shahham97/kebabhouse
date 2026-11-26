@@ -5,6 +5,8 @@ import { CartProvider } from '@/components/storefront/CartProvider';
 import { StoreHeader } from '@/components/storefront/StoreHeader';
 import { StoreFooter } from '@/components/storefront/StoreFooter';
 
+export const dynamic = 'force-dynamic';
+
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const [ctx, customer] = await Promise.all([getStorefrontContext(), getCustomerActor()]);
 

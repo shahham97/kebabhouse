@@ -38,7 +38,7 @@ test.describe('Star Kebab — End-to-End Platform, Role Auth & Responsive Journe
     await page.locator('#admin-email').fill('staff@starkebab.com.au');
     await page.locator('#admin-password').fill('StarStaff123!');
     await page.getByRole('button', { name: /Sign In to Admin Portal/i }).click();
-    await expect(page.getByRole('alert')).toContainText(/Staff Login/i, { timeout: 20000 });
+    await expect(page.getByText(/Please use the Staff Login portal/i)).toBeVisible({ timeout: 20000 });
 
     // Customer Login on /account/login works for Oliver Smith
     await page.goto('/account/login');
@@ -54,7 +54,7 @@ test.describe('Star Kebab — End-to-End Platform, Role Auth & Responsive Journe
   }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toContainText(/CARVED OFF THE/i);
-    await expect(page.getByText(/Active Combos & Deals/i)).toBeVisible();
+    await expect(page.getByText(/Active Combos & Deals/i).first()).toBeVisible();
 
     await page.goto('/menu');
     await expect(page.getByText('Signature Charcoal Kebab').first()).toBeVisible();
@@ -138,7 +138,7 @@ test.describe('Star Kebab — End-to-End Platform, Role Auth & Responsive Journe
     // 4. Return to /till -> Ready -> Mark Served -> Take Cash Payment -> Auto-Complete
     await page.goto('/till');
     await page.getByRole('button', { name: /Live Operations Board/i }).click();
-    await page.getByRole('button', { name: /^Ready\b/i }).click();
+    await page.getByRole('button', { name: /^Ready\s+\d+$/i }).click();
 
     const readyCard = page
       .locator('div.rounded-2xl', { hasText: orderNumber })
