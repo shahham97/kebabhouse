@@ -15,6 +15,7 @@ import {
   type OrderStatus,
 } from './state';
 import { releaseStockForOrder, reserveStockForOrder } from '@/modules/inventory/service';
+import { computeVariantAvailability } from '@/modules/catalog/availability';
 import type { Permission } from '@/config/permissions';
 
 export interface CreateOrderItemInput {
@@ -73,9 +74,10 @@ async function resolveAndPriceItems(
 
   const variantIds = [...new Set(rawItems.map((i) => i.variantId))];
   const variants = await tx.variant.findMany({
-    where: { id: { in: variantIds }, active: true, product: { storeId, active: true } },
+    where: { id: { in: variantIds }, active: true, comingSoon: false, product: { storeId, active: true } },
     include: {
       product: { include: { category: true } },
+      recipeLines: { include: { inventoryItem: { select: { onHand: true } } } },
     },
   });
   const variantMap = new Map(variants.map((v) => [v.id, v]));
@@ -99,8 +101,19 @@ async function resolveAndPriceItems(
   for (const raw of rawItems) {
     const v = variantMap.get(raw.variantId);
     if (!v) throw new ValidationError('One or more selected menu items are unavailable');
-    if (v.soldOut || v.product.soldOut) {
-      throw new ValidationError(`${v.product.name} (${v.name}) is currently sold out`);
+    const avail = computeVariantAvailability({
+      active: v.active,
+      soldOut: v.soldOut || v.product.soldOut,
+      comingSoon: v.comingSoon,
+      recipeLines: v.recipeLines.map((rl) => ({
+        quantity: Number(rl.quantity),
+        onHand: Number(rl.inventoryItem.onHand),
+      })),
+    });
+    if (!avail.isOrderable) {
+      throw new ValidationError(
+        `${v.product.name} (${v.name}) is currently ${avail.customerStatus === 'COMING_SOON' ? 'coming soon' : 'unavailable'}`
+      );
     }
 
     const stationId = resolveStationId({

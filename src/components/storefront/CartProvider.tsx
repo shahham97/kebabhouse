@@ -29,6 +29,12 @@ export interface CartModifier {
   priceDeltaCents: number;
 }
 
+export interface CartVariantOption {
+  id: string;
+  name: string;
+  priceCents: number;
+}
+
 export interface CartItem {
   key: string;
   variantId: string;
@@ -40,6 +46,7 @@ export interface CartItem {
   modifiers: CartModifier[];
   quantity: number;
   notes: string;
+  availableVariants?: CartVariantOption[];
 }
 
 export type FulfilmentMode = 'PICKUP' | 'DELIVERY';
@@ -101,6 +108,7 @@ interface CartContextValue {
   addItem: (item: Omit<CartItem, 'key'>) => void;
   updateQuantity: (key: string, quantity: number) => void;
   updateItemNotes: (key: string, notes: string) => void;
+  switchItemVariant: (key: string, nextVariantId: string) => void;
   removeItem: (key: string) => void;
   clearCart: () => void;
   setFulfilment: (mode: FulfilmentMode) => void;
@@ -194,6 +202,36 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const switchItemVariant = useCallback((key: string, nextVariantId: string) => {
+    setState((prev) => {
+      const target = prev.items.find((i) => i.key === key);
+      if (!target || !target.availableVariants) return prev;
+      const nextVar = target.availableVariants.find((v) => v.id === nextVariantId);
+      if (!nextVar || nextVar.id === target.variantId) return prev;
+
+      const updatedItem: CartItem = {
+        ...target,
+        variantId: nextVar.id,
+        variantName: nextVar.name,
+        basePriceCents: nextVar.priceCents,
+        key: buildItemKey(nextVar.id, target.modifiers, target.notes),
+      };
+
+      const withoutOld = prev.items.filter((i) => i.key !== key);
+      const mergeIdx = withoutOld.findIndex((i) => i.key === updatedItem.key);
+      if (mergeIdx >= 0) {
+        const merged = [...withoutOld];
+        const existing = merged[mergeIdx]!;
+        merged[mergeIdx] = { ...existing, quantity: existing.quantity + updatedItem.quantity };
+        return { ...prev, items: merged };
+      }
+      const oldIdx = prev.items.findIndex((i) => i.key === key);
+      const nextItems = [...withoutOld];
+      nextItems.splice(oldIdx, 0, updatedItem);
+      return { ...prev, items: nextItems };
+    });
+  }, []);
+
   const removeItem = useCallback((key: string) => {
     setState((prev) => ({
       ...prev,
@@ -251,6 +289,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       addItem,
       updateQuantity,
       updateItemNotes,
+      switchItemVariant,
       removeItem,
       clearCart,
       setFulfilment,
@@ -273,6 +312,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       addItem,
       updateQuantity,
       updateItemNotes,
+      switchItemVariant,
       removeItem,
       clearCart,
       setFulfilment,
@@ -341,6 +381,7 @@ function BasketDrawer({
     timing,
     updateQuantity,
     updateItemNotes,
+    switchItemVariant,
     removeItem,
     clearCart,
   } = useCart();
@@ -463,6 +504,27 @@ function BasketDrawer({
                         )}
                       </div>
                     </div>
+
+                    {/* Switch Variant in Order Drawer (auto-recalculates bill) */}
+                    {item.availableVariants && item.availableVariants.length > 1 && (
+                      <div className="mt-2.5">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-smoke mb-1">
+                          Variant / Size
+                        </label>
+                        <select
+                          aria-label={`Change variant for ${item.productName}`}
+                          value={item.variantId}
+                          onChange={(e) => switchItemVariant(item.key, e.target.value)}
+                          className="w-full rounded-lg border border-border-warm bg-cream/60 px-2.5 py-1.5 text-xs font-semibold text-char focus:border-ember focus:outline-none"
+                        >
+                          {item.availableVariants.map((v) => (
+                            <option key={v.id} value={v.id}>
+                              {v.name} — {formatAUD(v.priceCents)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
 
                     {/* Item notes */}
                     <div className="mt-2.5">

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   Receipt,
+  ReceiptText,
   MonitorSmartphone,
   Flame,
   UtensilsCrossed,
@@ -33,6 +34,7 @@ import { cn } from '@/lib/utils';
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
   Receipt,
+  ReceiptText,
   MonitorSmartphone,
   Flame,
   UtensilsCrossed,

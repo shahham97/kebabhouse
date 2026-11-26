@@ -19,6 +19,7 @@ export const ADMIN_MODULES = [
   { key: 'purchasing', label: 'Vendors & POs', href: '/admin/purchasing', icon: 'Truck', permission: 'vendors.manage', group: 'Catalogue & Stock' },
   { key: 'deals', label: 'Deals & Coupons', href: '/admin/deals', icon: 'Tag', permission: 'deals.manage', group: 'Growth & Finance' },
   { key: 'customers', label: 'Customers & Loyalty', href: '/admin/customers', icon: 'Users', permission: 'customers.view', group: 'Growth & Finance' },
+  { key: 'billing', label: 'Bill & Receipts', href: '/admin/billing', icon: 'ReceiptText', permission: 'billing.manage', group: 'Growth & Finance' },
   { key: 'finance', label: 'Finance & Cash', href: '/admin/finance', icon: 'Landmark', permission: 'finance.view', group: 'Growth & Finance' },
   { key: 'cms', label: 'Website & CMS', href: '/admin/cms', icon: 'Globe', permission: 'cms.manage', group: 'System' },
   { key: 'staff', label: 'Staff & PINs', href: '/admin/staff', icon: 'UserCog', permission: 'staff.manage', group: 'System' },

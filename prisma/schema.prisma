@@ -33,6 +33,7 @@ model Store {
   pauseResumeAt    DateTime? @db.DateTime(3)
   defaultStationId String?
   negativeStockPolicy String @default("warn") // warn | block
+  heroImageUrl     String   @default("/images/hero-grill.jpg")
   brandingJson     Json?    // theme token overrides
   createdAt        DateTime @default(now()) @db.DateTime(3)
   updatedAt        DateTime @updatedAt @db.DateTime(3)
@@ -418,6 +419,7 @@ model Variant {
   prepMinutes Int      @default(8)
   active      Boolean  @default(true)
   soldOut     Boolean  @default(false)
+  comingSoon  Boolean  @default(false)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now()) @db.DateTime(3)
   updatedAt   DateTime @updatedAt @db.DateTime(3)
@@ -493,6 +495,7 @@ model InventoryItem {
   code              String
   name              String
   description       String   @default("")
+  imageUrl          String?
   unit              String   // kg, g, L, ml, piece, unit, packet, box
   onHand            Decimal  @default(0) @db.Decimal(12, 3)
   minThreshold      Decimal  @default(5) @db.Decimal(12, 3)

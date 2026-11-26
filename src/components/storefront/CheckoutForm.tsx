@@ -25,6 +25,7 @@ import {
   validateCouponAction,
 } from '@/modules/storefront/actions';
 import { calcCartItemUnitCents, useCart } from './CartProvider';
+import { saveRecentTrackedOrder } from './TrackOrderClient';
 
 interface CheckoutFormProps {
   store: {
@@ -62,6 +63,7 @@ export function CheckoutForm({
     setDeliveryZone,
     setTiming,
     setScheduledFor,
+    switchItemVariant,
     clearCart,
   } = useCart();
 
@@ -243,6 +245,12 @@ export function CheckoutForm({
       return;
     }
 
+    saveRecentTrackedOrder({
+      publicId: res.data.publicId,
+      number: res.data.number,
+      trackingToken: res.data.trackingToken,
+      placedAt: new Date().toISOString(),
+    });
     clearCart();
     router.push(
       `/order/${res.data.publicId}?t=${encodeURIComponent(res.data.trackingToken)}`
@@ -590,7 +598,22 @@ export function CheckoutForm({
                       <p className="text-sm font-bold text-char">
                         {item.quantity}× {item.productName}
                       </p>
-                      <p className="text-xs text-smoke">{item.variantName}</p>
+                      {item.availableVariants && item.availableVariants.length > 1 ? (
+                        <select
+                          aria-label={`Change variant for ${item.productName}`}
+                          value={item.variantId}
+                          onChange={(e) => switchItemVariant(item.key, e.target.value)}
+                          className="mt-1 rounded-lg border border-border-warm bg-cream/60 px-2 py-1 text-xs font-semibold text-char focus:border-ember focus:outline-none"
+                        >
+                          {item.availableVariants.map((v) => (
+                            <option key={v.id} value={v.id}>
+                              {v.name} ({formatAUD(v.priceCents)})
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <p className="text-xs text-smoke">{item.variantName}</p>
+                      )}
                       {item.modifiers.length > 0 && (
                         <p className="mt-0.5 text-xs text-smoke">
                           {item.modifiers.map((m) => m.optionName).join(', ')}

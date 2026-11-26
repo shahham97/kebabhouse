@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
 import { requireStaff, type StaffActor } from '@/lib/auth';
 import { ForbiddenError, UnauthorizedError } from '@/lib/errors';
+import { computeVariantAvailability } from '@/modules/catalog/availability';
 import type { Permission } from '@/config/permissions';
 
 export type AdminPageGuardResult =
@@ -346,7 +347,16 @@ export async function getAdminCatalog(storeId: string) {
       include: {
         category: { select: { id: true, name: true } },
         station: { select: { id: true, name: true, code: true } },
-        variants: { orderBy: { sortOrder: 'asc' } },
+        variants: {
+          orderBy: { sortOrder: 'asc' },
+          include: {
+            recipeLines: {
+              include: {
+                inventoryItem: { select: { onHand: true } },
+              },
+            },
+          },
+        },
       },
     }),
     db.modifierGroup.findMany({
@@ -370,6 +380,7 @@ export async function getAdminCatalog(storeId: string) {
       name: c.name,
       slug: c.slug,
       description: c.description,
+      imageUrl: c.imageUrl,
       sortOrder: c.sortOrder,
       showInMenu: c.showInMenu,
       defaultStationId: c.defaultStationId,
@@ -385,20 +396,37 @@ export async function getAdminCatalog(storeId: string) {
       name: p.name,
       slug: p.slug,
       description: p.description,
+      imageUrl: p.imageUrl,
+      spicyLevel: p.spicyLevel,
       taxCode: p.taxCode,
       visibility: p.visibility,
       active: p.active,
       soldOut: p.soldOut,
       isBestSeller: p.isBestSeller,
-      variants: p.variants.map((v) => ({
-        id: v.id,
-        name: v.name,
-        sku: v.sku,
-        priceCents: v.priceCents,
-        prepMinutes: v.prepMinutes,
-        active: v.active,
-        soldOut: v.soldOut,
-      })),
+      variants: p.variants.map((v) => {
+        const avail = computeVariantAvailability({
+          active: v.active,
+          soldOut: v.soldOut || p.soldOut,
+          comingSoon: v.comingSoon,
+          recipeLines: v.recipeLines.map((rl) => ({
+            quantity: Number(rl.quantity),
+            onHand: Number(rl.inventoryItem.onHand),
+          })),
+        });
+        return {
+          id: v.id,
+          name: v.name,
+          sku: v.sku,
+          priceCents: v.priceCents,
+          prepMinutes: v.prepMinutes,
+          active: v.active,
+          soldOut: v.soldOut,
+          comingSoon: v.comingSoon,
+          maxServings: avail.maxServings,
+          computedOutOfStock: avail.computedOutOfStock,
+          isOrderable: avail.isOrderable,
+        };
+      }),
     })),
     modifierGroups: modifierGroups.map((mg) => ({
       id: mg.id,
@@ -473,6 +501,7 @@ export async function getAdminInventory(storeId: string) {
       code: i.code,
       name: i.name,
       description: i.description,
+      imageUrl: i.imageUrl,
       unit: i.unit,
       onHand: Number(i.onHand),
       minThreshold: Number(i.minThreshold),
@@ -820,6 +849,7 @@ export async function getAdminCms(storeId: string) {
         id: true,
         name: true,
         slug: true,
+        heroImageUrl: true,
         brandingJson: true,
       },
     }),
@@ -846,8 +876,46 @@ export async function getAdminCms(storeId: string) {
     storeBranding: {
       storeName: store.name,
       slug: store.slug,
+      heroImageUrl: store.heroImageUrl,
       brandingJson: store.brandingJson as Record<string, string> | null,
     },
+  };
+}
+
+export async function getAdminBilling(storeId: string) {
+  const [store, templates] = await Promise.all([
+    db.store.findUniqueOrThrow({
+      where: { id: storeId },
+      select: {
+        id: true,
+        name: true,
+        abn: true,
+        phone: true,
+        email: true,
+        address: true,
+        gstRatePct: true,
+        gstRegistered: true,
+      },
+    }),
+    db.receiptTemplate.findMany({
+      where: { storeId },
+      orderBy: { version: 'desc' },
+      take: 10,
+    }),
+  ]);
+
+  return {
+    store,
+    templates: templates.map((t) => ({
+      id: t.id,
+      version: t.version,
+      headerText: t.headerText,
+      footerText: t.footerText,
+      showAbn: t.showAbn,
+      showGstLine: t.showGstLine,
+      active: t.active,
+      createdAt: t.createdAt.toISOString(),
+    })),
   };
 }
 

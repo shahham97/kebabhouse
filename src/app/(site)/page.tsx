@@ -54,7 +54,7 @@ export default async function HomePage() {
       <section className="relative overflow-hidden bg-char text-cream">
         <div className="absolute inset-0">
           <Image
-            src="/images/hero-grill.jpg"
+            src={ctx.store.heroImageUrl || '/images/hero-grill.jpg'}
             alt="Star Kebab live charcoal spit and grill"
             fill
             priority

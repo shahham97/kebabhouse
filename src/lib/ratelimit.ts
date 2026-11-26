@@ -6,7 +6,8 @@ export type LimitName =
   | 'checkout'
   | 'coupon'
   | 'contact'
-  | 'ably';
+  | 'ably'
+  | 'track';
 
 const LIMITS: Record<LimitName, { max: number; windowMs: number }> = {
   login: { max: 5, windowMs: 15 * 60 * 1000 },
@@ -15,6 +16,7 @@ const LIMITS: Record<LimitName, { max: number; windowMs: number }> = {
   coupon: { max: 10, windowMs: 60 * 1000 },
   contact: { max: 3, windowMs: 10 * 60 * 1000 },
   ably: { max: 30, windowMs: 60 * 1000 },
+  track: { max: 15, windowMs: 60 * 1000 },
 };
 
 const buckets = new Map<string, number[]>();

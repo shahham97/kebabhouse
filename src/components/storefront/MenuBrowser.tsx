@@ -7,6 +7,7 @@ import { formatAUD } from '@/lib/money';
 import { cn } from '@/lib/utils';
 import type { PublicMenuCategory, PublicProduct } from '@/modules/storefront/queries';
 import { ProductCustomizerModal } from './ProductCustomizerModal';
+import { useCart, type CartModifier } from './CartProvider';
 
 type FilterChip = 'ALL' | 'HALAL' | 'VEG' | 'SPICY' | 'BEST_SELLERS';
 
@@ -197,17 +198,79 @@ function ProductCard({
   product: PublicProduct;
   onSelect: () => void;
 }) {
-  const minPrice = Math.min(...product.variants.map((v) => v.priceCents));
+  const { addItem, openDrawer } = useCart();
+  const orderableVariants = product.variants.filter((v) => v.isOrderable);
+  const basicVariant = product.variants[0];
+  const basicIsOrderable = !!basicVariant && basicVariant.isOrderable && !product.soldOut;
+  const allComingSoon =
+    product.variants.length > 0 && product.variants.every((v) => v.status === 'COMING_SOON');
+  const allUnavailable = orderableVariants.length === 0 || product.soldOut;
+
+  const minPrice =
+    orderableVariants.length > 0
+      ? Math.min(...orderableVariants.map((v) => v.priceCents))
+      : product.variants.length > 0
+        ? Math.min(...product.variants.map((v) => v.priceCents))
+        : 0;
   const hasMultipleVariants = product.variants.length > 1;
   const isHalal = product.tags.includes('halal');
   const isVeg = product.tags.includes('veg');
+
+  function handleQuickAdd(e: React.MouseEvent) {
+    e.stopPropagation();
+    const targetVariant = basicIsOrderable ? basicVariant : orderableVariants[0];
+    if (!targetVariant || allUnavailable || !basicIsOrderable) return;
+
+    const defaultMods: CartModifier[] = [];
+    for (const g of product.modifierGroups) {
+      const defaults = g.options.filter((o) => o.isDefault && !o.soldOut);
+      if (defaults.length > 0) {
+        for (const opt of defaults.slice(0, g.maxSelect)) {
+          defaultMods.push({
+            optionId: opt.id,
+            groupName: g.name,
+            optionName: opt.name,
+            priceDeltaCents: opt.priceDeltaCents,
+          });
+        }
+      } else if (g.required || g.minSelect > 0) {
+        const firstAvail = g.options.find((o) => !o.soldOut);
+        if (firstAvail) {
+          defaultMods.push({
+            optionId: firstAvail.id,
+            groupName: g.name,
+            optionName: firstAvail.name,
+            priceDeltaCents: firstAvail.priceDeltaCents,
+          });
+        }
+      }
+    }
+
+    addItem({
+      variantId: targetVariant.id,
+      productId: product.id,
+      productName: product.name,
+      variantName: targetVariant.name,
+      imageUrl: product.imageUrl,
+      basePriceCents: targetVariant.priceCents,
+      modifiers: defaultMods,
+      quantity: 1,
+      notes: '',
+      availableVariants: orderableVariants.map((v) => ({
+        id: v.id,
+        name: v.name,
+        priceCents: v.priceCents,
+      })),
+    });
+    openDrawer();
+  }
 
   return (
     <article
       onClick={onSelect}
       className={cn(
         'group relative flex flex-col overflow-hidden rounded-2xl border border-border-warm bg-white shadow-xs transition hover:-translate-y-0.5 hover:shadow-xl hover:border-ember/40 cursor-pointer',
-        product.soldOut && 'opacity-75'
+        allUnavailable && 'opacity-75'
       )}
     >
       {/* Image */}
@@ -223,14 +286,19 @@ function ProductCard({
 
         {/* Top Badges */}
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
-          {product.isBestSeller && !product.soldOut && (
+          {product.isBestSeller && !allUnavailable && (
             <span className="inline-flex items-center gap-1 rounded-full bg-saffron px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-char shadow">
               <Star className="h-3 w-3 fill-char" /> Best Seller
             </span>
           )}
-          {product.soldOut && (
+          {allComingSoon && (
             <span className="rounded-full bg-char px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-saffron border border-saffron/40">
-              86 / Sold Out
+              Coming Soon
+            </span>
+          )}
+          {!allComingSoon && allUnavailable && (
+            <span className="rounded-full bg-char px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-cream border border-cream/30">
+              Unavailable
             </span>
           )}
         </div>
@@ -270,21 +338,28 @@ function ProductCard({
           {product.description}
         </p>
 
-        <div className="mt-4 flex items-center justify-between pt-2 border-t border-border-warm/60">
-          <span className="text-xs text-smoke">
-            {product.modifierGroups.length > 0 ? 'Customisable' : product.variants[0]?.name}
+        <div className="mt-4 flex items-center justify-between gap-2 pt-2 border-t border-border-warm/60">
+          <span className="text-xs text-smoke truncate">
+            {product.modifierGroups.length > 0 ? 'Tap to customise' : basicVariant?.name}
           </span>
-          <span
+          <button
+            type="button"
+            disabled={allUnavailable || !basicIsOrderable}
+            onClick={handleQuickAdd}
             className={cn(
-              'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold transition',
-              product.soldOut
-                ? 'bg-cream-deep text-smoke'
-                : 'bg-ember text-cream group-hover:bg-ember-dark'
+              'inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold transition',
+              allUnavailable || !basicIsOrderable
+                ? 'bg-cream-deep text-smoke cursor-not-allowed'
+                : 'bg-ember text-cream hover:bg-ember-dark cursor-pointer'
             )}
           >
-            <Plus className="h-3.5 w-3.5" />
-            {product.soldOut ? 'Sold Out' : 'Add'}
-          </span>
+            {!allUnavailable && basicIsOrderable && <Plus className="h-3.5 w-3.5" />}
+            {allComingSoon
+              ? 'Coming Soon'
+              : allUnavailable || !basicIsOrderable
+                ? 'Unavailable'
+                : 'Quick Add'}
+          </button>
         </div>
       </div>
     </article>

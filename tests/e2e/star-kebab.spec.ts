@@ -6,13 +6,18 @@ test.describe('Star Kebab — End-to-End Platform, Role Auth & Responsive Journe
   }) => {
     // 1. Mobile viewport (390x844) responsiveness check across public + auth routes
     await page.setViewportSize({ width: 390, height: 844 });
-    for (const route of ['/', '/menu', '/admin/login', '/staff/login', '/account/login']) {
+    for (const route of ['/', '/menu', '/track', '/admin/login', '/staff/login', '/account/login']) {
       await page.goto(route);
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth
       );
       expect(overflow, `Horizontal overflow on mobile ${route}`).toBeLessThanOrEqual(4);
     }
+
+    // Verify ZERO portal links (/admin, /staff, /till, /station) exist on public storefront
+    await page.goto('/');
+    const portalLinksCount = await page.locator('a[href^="/admin"], a[href^="/staff"], a[href^="/till"], a[href^="/station"]').count();
+    expect(portalLinksCount, 'Public storefront must NOT expose staff/admin portal links').toBe(0);
 
     // 2. Desktop viewport for role separation & validation checks
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -59,13 +64,14 @@ test.describe('Star Kebab — End-to-End Platform, Role Auth & Responsive Journe
     await page.goto('/menu');
     await expect(page.getByText('Signature Charcoal Kebab').first()).toBeVisible();
 
-    await page.getByText('Signature Charcoal Kebab').first().click();
-    const dialog = page.getByRole('dialog', { name: 'Signature Charcoal Kebab' });
-    await expect(dialog).toBeVisible();
-
-    await dialog.getByRole('button', { name: 'Increase quantity' }).click();
-    await dialog.getByRole('button', { name: /Add to Order/i }).click();
-    await expect(dialog).toBeHidden();
+    // Quick Add basic variant directly from card -> opens drawer -> switch variant to Large Jumbo
+    const kebabCard = page.locator('article', { hasText: 'Signature Charcoal Kebab' }).first();
+    await kebabCard.getByRole('button', { name: /Quick Add/i }).click();
+    const variantSelect = page.getByLabel('Change variant for Signature Charcoal Kebab');
+    await expect(variantSelect).toBeVisible();
+    await variantSelect.selectOption({ index: 1 }); // shift from Regular ($14.50) to Large Jumbo ($18.50)
+    await page.getByRole('button', { name: 'Increase quantity' }).click(); // 2 x $18.50 = $37.00 (>= $20 STAR15)
+    await page.getByRole('button', { name: 'Close basket' }).click();
 
     await page.goto('/checkout');
     await expect(page.getByText(/1\. Fulfilment & Timing/i)).toBeVisible();
@@ -87,6 +93,11 @@ test.describe('Star Kebab — End-to-End Platform, Role Auth & Responsive Journe
     await expect(page.getByRole('heading', { level: 1 })).toContainText(/#SK-\d+/);
     await expect(page.getByText(/Order Received/i).first()).toBeVisible();
     await expect(page.getByText(/Tax Invoice Summary/i)).toBeVisible();
+
+    // Verify Track Order page (/track) shows the newly placed order
+    await page.goto('/track');
+    await expect(page.getByText(/Your Recent Orders/i)).toBeVisible();
+    await expect(page.getByText(/#SK-\d+/).first()).toBeVisible();
   });
 
   test('Test 3: Admin Login (Usama) -> Till Dine-In -> Kebab KDS -> Serve -> Cash Payment -> Auto-Complete + RBAC', async ({
@@ -99,6 +110,15 @@ test.describe('Star Kebab — End-to-End Platform, Role Auth & Responsive Journe
     await page.getByRole('button', { name: /Sign In to Admin Portal/i }).click();
     await expect(page).toHaveURL(/\/admin$/, { timeout: 45000 });
     await expect(page.getByText(/Usama/i).first()).toBeVisible();
+
+    // Verify new Bill Customization tab + Catalog Staff Stock Count + CMS Nav editor load cleanly
+    await page.goto('/admin/billing');
+    await expect(page.getByText(/Live 80mm Bill Preview/i)).toBeVisible();
+    await page.goto('/admin/catalog');
+    await expect(page.getByText(/Stock:/i).first()).toBeVisible();
+    await page.goto('/admin/cms');
+    await expect(page.getByText(/Header Navigation/i)).toBeVisible();
+    await expect(page.getByText(/Footer Navigation/i)).toBeVisible();
 
     // 2. Open /till and create Dine-In Table 9 order
     await page.goto('/till');

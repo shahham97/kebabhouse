@@ -311,3 +311,55 @@ export const customerLogoutAction = defineAction({
     return { loggedOut: true };
   },
 });
+
+export const lookupOrderForTrackingAction = defineAction({
+  name: 'storefront.track.lookup',
+  permission: 'public',
+  rateLimit: 'track',
+  audit: false,
+  schema: z.object({
+    orderNumber: z.string().trim().min(3, 'Enter your order number (e.g. #SK-0001)'),
+    contact: z.string().trim().min(4, 'Enter the email or phone used on your order'),
+  }),
+  handler: async ({ orderNumber, contact }, { db }) => {
+    const normalizedNum = orderNumber.startsWith('#')
+      ? orderNumber.toUpperCase()
+      : `#${orderNumber.toUpperCase()}`;
+
+    const order = await db.order.findFirst({
+      where: {
+        OR: [{ number: normalizedNum }, { publicId: orderNumber }],
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        publicId: true,
+        number: true,
+        trackingToken: true,
+        customerEmail: true,
+        customerPhone: true,
+      },
+    });
+
+    if (!order) {
+      throw new ValidationError('Order not found. Double-check your order number and contact.');
+    }
+
+    const emailMatch =
+      !!order.customerEmail &&
+      order.customerEmail.toLowerCase().trim() === contact.toLowerCase().trim();
+    const phoneDigits = contact.replace(/\D/g, '');
+    const orderPhoneDigits = order.customerPhone.replace(/\D/g, '');
+    const phoneMatch =
+      phoneDigits.length >= 6 && orderPhoneDigits.endsWith(phoneDigits.slice(-6));
+
+    if (!emailMatch && !phoneMatch) {
+      throw new ValidationError('Order not found. Double-check your order number and contact.');
+    }
+
+    return {
+      publicId: order.publicId,
+      number: order.number,
+      trackingToken: order.trackingToken,
+    };
+  },
+});

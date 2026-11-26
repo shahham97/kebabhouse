@@ -112,7 +112,10 @@ export function ProductCustomizerModal({ product, onClose }: ProductCustomizerMo
   }
 
   function handleAddToOrder() {
-    if (!product || !selectedVariant || isSoldOut || !groupValidation.allValid) return;
+    if (!product || !selectedVariant || isSoldOut || !selectedVariant.isOrderable || !groupValidation.allValid) return;
+    const orderableVariants = product.variants
+      .filter((v) => v.isOrderable)
+      .map((v) => ({ id: v.id, name: v.name, priceCents: v.priceCents }));
     addItem({
       variantId: selectedVariant.id,
       productId: product.id,
@@ -123,6 +126,7 @@ export function ProductCustomizerModal({ product, onClose }: ProductCustomizerMo
       modifiers: selectedModifiers,
       quantity,
       notes: notes.trim(),
+      availableVariants: orderableVariants,
     });
     onClose();
     openDrawer();
@@ -227,21 +231,38 @@ export function ProductCustomizerModal({ product, onClose }: ProductCustomizerMo
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {product.variants.map((v) => {
                   const active = v.id === selectedVariant?.id;
+                  const unavailable = !v.isOrderable;
                   return (
                     <button
                       key={v.id}
                       type="button"
-                      disabled={v.soldOut}
+                      disabled={unavailable}
                       onClick={() => setSelectedVariantId(v.id)}
                       className={cn(
-                        'flex items-center justify-between rounded-xl border-2 px-4 py-3 text-left transition cursor-pointer',
-                        v.soldOut && 'opacity-50 cursor-not-allowed line-through',
-                        active
+                        'flex items-center justify-between rounded-xl border-2 px-4 py-3 text-left transition',
+                        unavailable
+                          ? 'opacity-55 cursor-not-allowed border-border-warm bg-cream-deep/60'
+                          : 'cursor-pointer',
+                        !unavailable && active
                           ? 'border-ember bg-ember/10 text-char shadow-xs'
-                          : 'border-border-warm bg-white hover:border-ember/50 text-char'
+                          : !unavailable && 'border-border-warm bg-white hover:border-ember/50 text-char'
                       )}
                     >
-                      <span className="font-semibold text-sm">{v.name}</span>
+                      <div>
+                        <span className={cn('font-semibold text-sm', unavailable && 'line-through')}>
+                          {v.name}
+                        </span>
+                        {v.status === 'COMING_SOON' && (
+                          <span className="ml-2 rounded-full bg-saffron/30 px-2 py-0.5 text-[10px] font-bold uppercase text-char">
+                            Coming Soon
+                          </span>
+                        )}
+                        {v.status === 'UNAVAILABLE' && (
+                          <span className="ml-2 rounded-full bg-char/10 px-2 py-0.5 text-[10px] font-bold uppercase text-smoke">
+                            Unavailable
+                          </span>
+                        )}
+                      </div>
                       <span className="font-mono text-sm font-bold tabular-nums">
                         {formatAUD(v.priceCents)}
                       </span>

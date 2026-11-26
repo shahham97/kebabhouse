@@ -6,10 +6,11 @@ import { redirect } from 'next/navigation';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { defineAction } from '@/lib/action';
-import { destroyStaffSession, hashSecret, type StaffActor } from '@/lib/auth';
+import { destroyStaffSession, hashSecret, invalidateStaffSessionCache, type StaffActor } from '@/lib/auth';
 import { CACHE_TAGS, safeRevalidateTag } from '@/lib/cache';
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/lib/errors';
 import { receivePurchaseOrderGoods } from '@/modules/inventory/service';
+import { normalizeVariantFlags } from '@/modules/catalog/availability';
 
 function requireStaffActor(actor: { type: string }): StaffActor {
   if (actor.type !== 'staff') {
@@ -1136,5 +1137,336 @@ export const createDeliveryZoneAction = defineAction({
     safeRevalidateTag(CACHE_TAGS.settings);
     revalidatePath('/admin/settings');
     return { id: zone.id, name: zone.name };
+  },
+});
+
+// ============================================================
+// FULL EDIT ACTIONS (CATEGORIES, PRODUCTS, VARIANTS, INGREDIENTS,
+// CMS HEADER/FOOTER NAV, HERO IMAGE, STAFF CREDENTIALS, BILLING)
+// ============================================================
+
+export const updateCategoryAction = defineAction({
+  name: 'admin.catalog.updateCategory',
+  permission: 'catalog.manage',
+  schema: z.object({
+    categoryId: z.string().min(1),
+    name: z.string().trim().min(1, 'Category name is required').max(80),
+    description: z.string().trim().max(300).optional().default(''),
+    imageUrl: z.string().trim().max(500).optional().nullable(),
+    defaultStationId: z.string().optional().nullable(),
+    showInMenu: z.boolean().default(true),
+  }),
+  handler: async (input, { actor, db }) => {
+    const staff = requireStaffActor(actor);
+    const cat = await db.category.findFirst({
+      where: { id: input.categoryId, storeId: staff.storeId },
+    });
+    if (!cat) throw new NotFoundError('Category not found');
+
+    const updated = await db.category.update({
+      where: { id: cat.id },
+      data: {
+        name: input.name,
+        description: input.description,
+        imageUrl: input.imageUrl || null,
+        defaultStationId: input.defaultStationId || null,
+        showInMenu: input.showInMenu,
+      },
+    });
+    safeRevalidateTag(CACHE_TAGS.menu);
+    revalidatePath('/admin/catalog');
+    return { id: updated.id, name: updated.name };
+  },
+});
+
+export const updateProductAction = defineAction({
+  name: 'admin.catalog.updateProduct',
+  permission: 'catalog.manage',
+  schema: z.object({
+    productId: z.string().min(1),
+    name: z.string().trim().min(1, 'Product name is required').max(120),
+    description: z.string().trim().max(1000).optional().default(''),
+    imageUrl: z.string().trim().max(500).optional().nullable(),
+    categoryId: z.string().min(1),
+    spicyLevel: z.number().int().min(0).max(3).default(0),
+    isBestSeller: z.boolean().default(false),
+    active: z.boolean().default(true),
+  }),
+  handler: async (input, { actor, db }) => {
+    const staff = requireStaffActor(actor);
+    const prod = await db.product.findFirst({
+      where: { id: input.productId, storeId: staff.storeId },
+    });
+    if (!prod) throw new NotFoundError('Product not found');
+
+    const updated = await db.product.update({
+      where: { id: prod.id },
+      data: {
+        name: input.name,
+        description: input.description,
+        imageUrl: input.imageUrl || null,
+        categoryId: input.categoryId,
+        spicyLevel: input.spicyLevel,
+        isBestSeller: input.isBestSeller,
+        active: input.active,
+      },
+    });
+    safeRevalidateTag(CACHE_TAGS.menu);
+    revalidatePath('/admin/catalog');
+    return { id: updated.id, name: updated.name };
+  },
+});
+
+export const updateVariantAction = defineAction({
+  name: 'admin.catalog.updateVariant',
+  permission: 'catalog.manage',
+  schema: z.object({
+    variantId: z.string().min(1),
+    name: z.string().trim().min(1, 'Variant name is required').max(80),
+    sku: z.string().trim().min(1, 'SKU is required').max(60),
+    priceCents: z.number().int().min(0, 'Price must be non-negative'),
+    prepMinutes: z.number().int().min(1).max(120).default(8),
+    active: z.boolean(),
+    soldOut: z.boolean(),
+    comingSoon: z.boolean(),
+  }),
+  handler: async (input, { actor, db }) => {
+    const staff = requireStaffActor(actor);
+    const v = await db.variant.findFirst({
+      where: { id: input.variantId, product: { storeId: staff.storeId } },
+    });
+    if (!v) throw new NotFoundError('Variant not found');
+
+    // Business rule: toggling Coming Soon ON automatically sets active = false (disabled)
+    const normalized = normalizeVariantFlags({
+      active: input.active,
+      soldOut: input.soldOut,
+      comingSoon: input.comingSoon,
+    });
+
+    const updated = await db.variant.update({
+      where: { id: v.id },
+      data: {
+        name: input.name,
+        sku: input.sku,
+        priceCents: input.priceCents,
+        prepMinutes: input.prepMinutes,
+        active: normalized.active,
+        soldOut: normalized.soldOut,
+        comingSoon: normalized.comingSoon,
+      },
+    });
+    safeRevalidateTag(CACHE_TAGS.menu);
+    revalidatePath('/admin/catalog');
+    return { id: updated.id, active: updated.active, comingSoon: updated.comingSoon };
+  },
+});
+
+export const updateInventoryItemAction = defineAction({
+  name: 'admin.inventory.updateItem',
+  permission: 'inventory.adjust',
+  schema: z.object({
+    inventoryItemId: z.string().min(1),
+    name: z.string().trim().min(1, 'Ingredient name is required').max(100),
+    code: z.string().trim().min(1, 'Code is required').max(40),
+    description: z.string().trim().max(300).optional().default(''),
+    imageUrl: z.string().trim().max(500).optional().nullable(),
+    minThreshold: z.number().min(0),
+    costPerUnitCents: z.number().int().min(0),
+  }),
+  handler: async (input, { actor, db }) => {
+    const staff = requireStaffActor(actor);
+    const item = await db.inventoryItem.findFirst({
+      where: { id: input.inventoryItemId, storeId: staff.storeId },
+    });
+    if (!item) throw new NotFoundError('Ingredient not found');
+
+    const updated = await db.inventoryItem.update({
+      where: { id: item.id },
+      data: {
+        name: input.name,
+        code: input.code,
+        description: input.description,
+        imageUrl: input.imageUrl || null,
+        minThreshold: new Prisma.Decimal(input.minThreshold),
+        costPerUnitCents: input.costPerUnitCents,
+      },
+    });
+    safeRevalidateTag(CACHE_TAGS.menu);
+    revalidatePath('/admin/inventory');
+    return { id: updated.id, name: updated.name };
+  },
+});
+
+export const saveCmsNavItemAction = defineAction({
+  name: 'admin.cms.saveNavItem',
+  permission: 'cms.manage',
+  schema: z.object({
+    id: z.string().optional(),
+    location: z.enum(['HEADER', 'FOOTER']),
+    label: z.string().trim().min(1, 'Label is required').max(60),
+    href: z.string().trim().min(1, 'Link URL is required').max(200),
+    sortOrder: z.number().int().min(0).default(0),
+    visible: z.boolean().default(true),
+  }),
+  handler: async (input, { actor, db }) => {
+    const staff = requireStaffActor(actor);
+    if (input.id) {
+      const existing = await db.cmsNavItem.findFirst({
+        where: { id: input.id, storeId: staff.storeId },
+      });
+      if (!existing) throw new NotFoundError('Navigation item not found');
+      const updated = await db.cmsNavItem.update({
+        where: { id: existing.id },
+        data: {
+          location: input.location,
+          label: input.label,
+          href: input.href,
+          sortOrder: input.sortOrder,
+          visible: input.visible,
+        },
+      });
+      safeRevalidateTag(CACHE_TAGS.cms);
+      revalidatePath('/admin/cms');
+      return { id: updated.id };
+    }
+
+    const created = await db.cmsNavItem.create({
+      data: {
+        storeId: staff.storeId,
+        location: input.location,
+        label: input.label,
+        href: input.href,
+        sortOrder: input.sortOrder,
+        visible: input.visible,
+      },
+    });
+    safeRevalidateTag(CACHE_TAGS.cms);
+    revalidatePath('/admin/cms');
+    return { id: created.id };
+  },
+});
+
+export const deleteCmsNavItemAction = defineAction({
+  name: 'admin.cms.deleteNavItem',
+  permission: 'cms.manage',
+  schema: z.object({ id: z.string().min(1) }),
+  handler: async (input, { actor, db }) => {
+    const staff = requireStaffActor(actor);
+    await db.cmsNavItem.deleteMany({
+      where: { id: input.id, storeId: staff.storeId },
+    });
+    safeRevalidateTag(CACHE_TAGS.cms);
+    revalidatePath('/admin/cms');
+    return { deleted: true };
+  },
+});
+
+export const updateHeroImageAction = defineAction({
+  name: 'admin.cms.updateHeroImage',
+  permission: 'cms.manage',
+  schema: z.object({
+    heroImageUrl: z.string().trim().min(1, 'Hero image URL is required').max(500),
+  }),
+  handler: async (input, { actor, db }) => {
+    const staff = requireStaffActor(actor);
+    await db.store.update({
+      where: { id: staff.storeId },
+      data: { heroImageUrl: input.heroImageUrl },
+    });
+    safeRevalidateTag(CACHE_TAGS.cms);
+    safeRevalidateTag(CACHE_TAGS.settings);
+    revalidatePath('/admin/cms');
+    return { heroImageUrl: input.heroImageUrl };
+  },
+});
+
+export const updateStaffCredentialsAction = defineAction({
+  name: 'admin.staff.updateCredentials',
+  permission: 'staff.manage',
+  schema: z.object({
+    staffUserId: z.string().min(1),
+    name: z.string().trim().min(2, 'Name is required').max(100),
+    email: z.string().trim().email('Enter a valid email address'),
+    roleId: z.string().min(1),
+    newPassword: z.string().min(8, 'Password must be at least 8 characters').optional().or(z.literal('')),
+    newPin: z.string().regex(/^\d{4,6}$/, 'PIN must be 4 to 6 digits').optional().or(z.literal('')),
+  }),
+  tx: true,
+  handler: async (input, { actor, db }) => {
+    const staff = requireStaffActor(actor);
+    const target = await db.staffUser.findFirst({
+      where: { id: input.staffUserId, storeId: staff.storeId },
+      include: { role: true },
+    });
+    if (!target) throw new NotFoundError('Staff member not found');
+
+    const targetRole = await db.role.findFirst({
+      where: { id: input.roleId, storeId: staff.storeId },
+    });
+    if (!targetRole) throw new NotFoundError('Role not found');
+    if (targetRole.isSystem && !staff.isSuperAdmin) {
+      throw new ForbiddenError('Only a Super Admin can assign the Super Admin role');
+    }
+
+    const passwordHash = input.newPassword ? await hashSecret(input.newPassword) : undefined;
+    const pinHash = input.newPin ? await hashSecret(input.newPin) : undefined;
+
+    await db.staffUser.update({
+      where: { id: target.id },
+      data: {
+        name: input.name,
+        email: input.email.toLowerCase(),
+        roleId: targetRole.id,
+        ...(passwordHash ? { passwordHash } : {}),
+        ...(pinHash ? { pinHash, pinFailedCount: 0, pinLockedUntil: null } : {}),
+        sessionVersion: { increment: 1 },
+      },
+    });
+
+    invalidateStaffSessionCache();
+    revalidatePath('/admin/staff');
+    return { id: target.id };
+  },
+});
+
+export const saveReceiptTemplateAction = defineAction({
+  name: 'admin.billing.saveTemplate',
+  permission: 'billing.manage',
+  schema: z.object({
+    headerText: z.string().trim().min(2, 'Header text is required').max(160),
+    footerText: z.string().trim().min(2, 'Footer text is required').max(400),
+    showAbn: z.boolean().default(true),
+    showGstLine: z.boolean().default(true),
+  }),
+  tx: true,
+  handler: async (input, { actor, db }) => {
+    const staff = requireStaffActor(actor);
+    const latest = await db.receiptTemplate.findFirst({
+      where: { storeId: staff.storeId },
+      orderBy: { version: 'desc' },
+      select: { version: true },
+    });
+
+    await db.receiptTemplate.updateMany({
+      where: { storeId: staff.storeId, active: true },
+      data: { active: false },
+    });
+
+    const created = await db.receiptTemplate.create({
+      data: {
+        storeId: staff.storeId,
+        version: (latest?.version ?? 0) + 1,
+        headerText: input.headerText,
+        footerText: input.footerText,
+        showAbn: input.showAbn,
+        showGstLine: input.showGstLine,
+        active: true,
+      },
+    });
+
+    safeRevalidateTag(CACHE_TAGS.settings);
+    revalidatePath('/admin/billing');
+    return { id: created.id, version: created.version };
   },
 });

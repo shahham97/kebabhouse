@@ -152,35 +152,18 @@ export function StoreFooter({ store, openingHours, footerNav }: StoreFooterProps
             </div>
 
             <div className="rounded-2xl border border-cream/15 bg-char-soft p-3.5">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-saffron mb-2">
-                Staff & Operations Portals
+              <p className="text-[11px] font-bold uppercase tracking-wider text-saffron mb-1.5">
+                Live Order Status
               </p>
-              <div className="flex flex-wrap gap-2 text-xs">
-                <Link
-                  href="/staff/login"
-                  className="rounded-lg bg-char px-2.5 py-1 text-cream/85 hover:bg-ember hover:text-cream transition"
-                >
-                  Staff Login
-                </Link>
-                <Link
-                  href="/till"
-                  className="rounded-lg bg-char px-2.5 py-1 text-cream/85 hover:bg-ember hover:text-cream transition"
-                >
-                  Till POS
-                </Link>
-                <Link
-                  href="/station/grill"
-                  className="rounded-lg bg-char px-2.5 py-1 text-cream/85 hover:bg-ember hover:text-cream transition"
-                >
-                  Kitchen KDS
-                </Link>
-                <Link
-                  href="/admin"
-                  className="rounded-lg bg-char px-2.5 py-1 text-cream/85 hover:bg-ember hover:text-cream transition"
-                >
-                  Admin
-                </Link>
-              </div>
+              <p className="text-xs text-cream/75 mb-2.5">
+                Placed an order? Watch it go from the charcoal spit to your door in real time.
+              </p>
+              <Link
+                href="/track"
+                className="inline-flex items-center justify-center rounded-lg bg-ember px-3 py-1.5 text-xs font-bold text-cream hover:bg-ember-dark transition"
+              >
+                Track Your Order →
+              </Link>
             </div>
           </div>
         </div>

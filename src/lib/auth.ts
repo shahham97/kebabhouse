@@ -11,6 +11,26 @@ export const STAFF_COOKIE = 'sk_staff_session';
 export const CUSTOMER_COOKIE = 'sk_cust_session';
 export const DEVICE_COOKIE = 'sk_device_token';
 
+const SESSION_CACHE_TTL_MS = 20_000;
+const staffSessionCache = new Map<string, { actor: StaffActor; expiresAt: number }>();
+const customerSessionCache = new Map<string, { actor: CustomerActor; expiresAt: number }>();
+
+export function invalidateStaffSessionCache(tokenHash?: string) {
+  if (tokenHash) {
+    staffSessionCache.delete(tokenHash);
+  } else {
+    staffSessionCache.clear();
+  }
+}
+
+export function invalidateCustomerSessionCache(tokenHash?: string) {
+  if (tokenHash) {
+    customerSessionCache.delete(tokenHash);
+  } else {
+    customerSessionCache.clear();
+  }
+}
+
 export interface StaffActor {
   type: 'staff';
   id: string;
@@ -72,8 +92,14 @@ export const getStaffActor = cache(async (): Promise<StaffActor | null> => {
     const raw = store.get(STAFF_COOKIE)?.value;
     if (!raw) return null;
 
+    const hashed = hashToken(raw);
+    const cached = staffSessionCache.get(hashed);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.actor;
+    }
+
     const session = await db.staffSession.findUnique({
-      where: { tokenHash: hashToken(raw) },
+      where: { tokenHash: hashed },
       include: {
         staffUser: {
           include: {
@@ -84,9 +110,15 @@ export const getStaffActor = cache(async (): Promise<StaffActor | null> => {
       },
     });
 
-    if (!session || session.expiresAt < new Date()) return null;
+    if (!session || session.expiresAt < new Date()) {
+      staffSessionCache.delete(hashed);
+      return null;
+    }
     const u = session.staffUser;
-    if (!u.active || u.sessionVersion !== session.sessionVersion) return null;
+    if (!u.active || u.sessionVersion !== session.sessionVersion) {
+      staffSessionCache.delete(hashed);
+      return null;
+    }
 
     const perms = new Set<Permission>();
     if (u.role.isSystem) {
@@ -96,7 +128,7 @@ export const getStaffActor = cache(async (): Promise<StaffActor | null> => {
       for (const g of u.grants) perms.add(g.permission.key as Permission);
     }
 
-    return {
+    const actor: StaffActor = {
       type: 'staff',
       id: u.id,
       storeId: u.storeId,
@@ -109,6 +141,8 @@ export const getStaffActor = cache(async (): Promise<StaffActor | null> => {
       permissions: perms,
       key: `staff:${u.id}`,
     };
+    staffSessionCache.set(hashed, { actor, expiresAt: Date.now() + SESSION_CACHE_TTL_MS });
+    return actor;
   } catch {
     return null;
   }
@@ -120,21 +154,35 @@ export const getCustomerActor = cache(async (): Promise<CustomerActor | null> =>
     const raw = store.get(CUSTOMER_COOKIE)?.value;
     if (!raw) return null;
 
+    const hashed = hashToken(raw);
+    const cached = customerSessionCache.get(hashed);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.actor;
+    }
+
     const session = await db.customerSession.findUnique({
-      where: { tokenHash: hashToken(raw) },
+      where: { tokenHash: hashed },
       include: { customer: true },
     });
 
-    if (!session || session.expiresAt < new Date()) return null;
-    if (session.customer.sessionVersion !== session.sessionVersion) return null;
+    if (!session || session.expiresAt < new Date()) {
+      customerSessionCache.delete(hashed);
+      return null;
+    }
+    if (session.customer.sessionVersion !== session.sessionVersion) {
+      customerSessionCache.delete(hashed);
+      return null;
+    }
 
-    return {
+    const actor: CustomerActor = {
       type: 'customer',
       id: session.customer.id,
       name: session.customer.name,
       email: session.customer.email,
       key: `cust:${session.customer.id}`,
     };
+    customerSessionCache.set(hashed, { actor, expiresAt: Date.now() + SESSION_CACHE_TTL_MS });
+    return actor;
   } catch {
     return null;
   }
@@ -206,7 +254,9 @@ export async function destroyStaffSession() {
   const c = await cookies();
   const raw = c.get(STAFF_COOKIE)?.value;
   if (raw) {
-    await db.staffSession.deleteMany({ where: { tokenHash: hashToken(raw) } });
+    const hashed = hashToken(raw);
+    invalidateStaffSessionCache(hashed);
+    await db.staffSession.deleteMany({ where: { tokenHash: hashed } });
   }
   c.delete(STAFF_COOKIE);
 }
@@ -239,7 +289,9 @@ export async function destroyCustomerSession() {
   const c = await cookies();
   const raw = c.get(CUSTOMER_COOKIE)?.value;
   if (raw) {
-    await db.customerSession.deleteMany({ where: { tokenHash: hashToken(raw) } });
+    const hashed = hashToken(raw);
+    invalidateCustomerSessionCache(hashed);
+    await db.customerSession.deleteMany({ where: { tokenHash: hashed } });
   }
   c.delete(CUSTOMER_COOKIE);
 }

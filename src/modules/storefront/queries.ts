@@ -3,6 +3,11 @@ import { unstable_cache } from 'next/cache';
 import { db } from '@/lib/db';
 import { CACHE_TAGS } from '@/lib/cache';
 import { getCustomerActor, getStaffActor, signTrackingToken } from '@/lib/auth';
+import {
+  computeVariantAvailability,
+  toCustomerVariantView,
+  type CustomerAvailabilityStatus,
+} from '@/modules/catalog/availability';
 
 export const STORE_SLUG = 'star-kebab';
 
@@ -30,6 +35,8 @@ export interface PublicVariant {
   priceCents: number;
   prepMinutes: number;
   soldOut: boolean;
+  isOrderable: boolean;
+  status: CustomerAvailabilityStatus;
 }
 
 export interface PublicProduct {
@@ -83,7 +90,13 @@ function mapProduct(
       sku: string;
       priceCents: number;
       prepMinutes: number;
+      active: boolean;
       soldOut: boolean;
+      comingSoon: boolean;
+      recipeLines?: Array<{
+        quantity: unknown;
+        inventoryItem: { onHand: unknown };
+      }>;
     }>;
     modifierGroups: Array<{
       modifierGroup: {
@@ -117,14 +130,28 @@ function mapProduct(
     spicyLevel: p.spicyLevel,
     soldOut: p.soldOut,
     isBestSeller: p.isBestSeller,
-    variants: p.variants.map((v) => ({
-      id: v.id,
-      name: v.name,
-      sku: v.sku,
-      priceCents: v.priceCents,
-      prepMinutes: v.prepMinutes,
-      soldOut: v.soldOut,
-    })),
+    variants: p.variants.map((v) => {
+      const avail = computeVariantAvailability({
+        active: v.active,
+        soldOut: v.soldOut || p.soldOut,
+        comingSoon: v.comingSoon,
+        recipeLines: (v.recipeLines ?? []).map((rl) => ({
+          quantity: Number(rl.quantity),
+          onHand: Number(rl.inventoryItem.onHand),
+        })),
+      });
+      const customerView = toCustomerVariantView(avail);
+      return {
+        id: v.id,
+        name: v.name,
+        sku: v.sku,
+        priceCents: v.priceCents,
+        prepMinutes: v.prepMinutes,
+        soldOut: !customerView.isOrderable,
+        isOrderable: customerView.isOrderable,
+        status: customerView.status,
+      };
+    }),
     modifierGroups: p.modifierGroups.map((pmg) => ({
       id: pmg.modifierGroup.id,
       name: pmg.modifierGroup.name,
@@ -190,6 +217,7 @@ async function fetchStorefrontContext() {
       onlinePaused: store.onlinePaused,
       pauseMessage: store.pauseMessage,
       pauseResumeAt: store.pauseResumeAt,
+      heroImageUrl: store.heroImageUrl,
     },
     announcements,
     headerNav,
@@ -225,8 +253,14 @@ async function fetchPublicMenu(): Promise<PublicMenuCategory[]> {
         orderBy: { sortOrder: 'asc' },
         include: {
           variants: {
-            where: { active: true },
             orderBy: { sortOrder: 'asc' },
+            include: {
+              recipeLines: {
+                include: {
+                  inventoryItem: { select: { onHand: true } },
+                },
+              },
+            },
           },
           modifierGroups: {
             orderBy: { sortOrder: 'asc' },
@@ -351,8 +385,14 @@ async function fetchBestSellers(): Promise<PublicProduct[]> {
     include: {
       category: { select: { name: true } },
       variants: {
-        where: { active: true },
         orderBy: { sortOrder: 'asc' },
+        include: {
+          recipeLines: {
+            include: {
+              inventoryItem: { select: { onHand: true } },
+            },
+          },
+        },
       },
       modifierGroups: {
         orderBy: { sortOrder: 'asc' },

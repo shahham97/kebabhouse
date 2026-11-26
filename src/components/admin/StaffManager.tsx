@@ -1,8 +1,13 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { UserPlus, Power, KeyRound } from 'lucide-react';
-import { createStaffUserAction, toggleStaffActiveAction } from '@/modules/admin/actions';
+import { useRouter } from 'next/navigation';
+import { UserPlus, Power, KeyRound, Pencil, X } from 'lucide-react';
+import {
+  createStaffUserAction,
+  toggleStaffActiveAction,
+  updateStaffCredentialsAction,
+} from '@/modules/admin/actions';
 import { formatStoreDateTime } from '@/lib/time';
 
 interface StaffRow {
@@ -33,8 +38,53 @@ export function StaffManager({
   roles: RoleOption[];
   currentStaffId: string;
 }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+
+  // Edit Credentials modal state
+  const [editingStaff, setEditingStaff] = useState<StaffRow | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editRoleId, setEditRoleId] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [editPin, setEditPin] = useState('');
+
+  function openEditModal(u: StaffRow) {
+    setEditingStaff(u);
+    setEditName(u.name);
+    setEditEmail(u.email);
+    setEditRoleId(u.roleId);
+    setEditPassword('');
+    setEditPin('');
+    setFeedback(null);
+  }
+
+  function handleSaveCredentials(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingStaff) return;
+    setFeedback(null);
+    startTransition(async () => {
+      const res = await updateStaffCredentialsAction({
+        staffUserId: editingStaff.id,
+        name: editName,
+        email: editEmail,
+        roleId: editRoleId,
+        newPassword: editPassword,
+        newPin: editPin,
+      });
+      if (res.ok) {
+        setEditingStaff(null);
+        setFeedback({
+          type: 'ok',
+          text: `Credentials updated for ${editName}. Existing sessions invalidated.`,
+        });
+        router.refresh();
+      } else {
+        setFeedback({ type: 'err', text: res.error.message });
+      }
+    });
+  }
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -224,15 +274,26 @@ export function StaffManager({
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        type="button"
-                        disabled={isPending || isSelf}
-                        onClick={() => handleToggle(u.id)}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-border-warm bg-cream px-3 py-1.5 text-xs font-semibold text-char transition hover:bg-cream-deep disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        <Power className="h-3.5 w-3.5" />
-                        {u.active ? 'Disable' : 'Re-enable'}
-                      </button>
+                      <div className="inline-flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => openEditModal(u)}
+                          className="inline-flex items-center gap-1 rounded-xl border border-border-warm bg-white px-3 py-1.5 text-xs font-semibold text-char transition hover:bg-cream-deep cursor-pointer"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isPending || isSelf}
+                          onClick={() => handleToggle(u.id)}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-border-warm bg-cream px-3 py-1.5 text-xs font-semibold text-char transition hover:bg-cream-deep disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                        >
+                          <Power className="h-3.5 w-3.5" />
+                          {u.active ? 'Disable' : 'Re-enable'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -241,6 +302,117 @@ export function StaffManager({
           </table>
         </div>
       </div>
+
+      {/* Edit Staff Credentials Modal */}
+      {editingStaff && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-char/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-lg rounded-2xl border border-border-warm bg-cream p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border-warm pb-3">
+              <div>
+                <h3 className="font-display text-2xl font-bold text-char">
+                  Update Staff Credentials
+                </h3>
+                <p className="text-xs text-smoke">
+                  Leave password or PIN blank to keep current values. Saving invalidates active sessions.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingStaff(null)}
+                className="rounded-lg p-1.5 text-smoke hover:bg-cream-deep hover:text-char cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCredentials} className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-smoke mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full rounded-xl border border-border-warm bg-white px-3 py-2 text-sm text-char"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-smoke mb-1">Work Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="w-full rounded-xl border border-border-warm bg-white px-3 py-2 text-sm text-char"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-smoke mb-1">Role</label>
+                <select
+                  value={editRoleId}
+                  onChange={(e) => setEditRoleId(e.target.value)}
+                  className="w-full rounded-xl border border-border-warm bg-white px-3 py-2 text-sm text-char"
+                >
+                  {roles.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-smoke mb-1">
+                    New Password (optional)
+                  </label>
+                  <input
+                    type="password"
+                    value={editPassword}
+                    onChange={(e) => setEditPassword(e.target.value)}
+                    placeholder="Min 8 characters"
+                    className="w-full rounded-xl border border-border-warm bg-white px-3 py-2 text-sm text-char"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-smoke mb-1">
+                    New Till PIN (optional)
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={editPin}
+                    onChange={(e) => setEditPin(e.target.value.replace(/\D/g, ''))}
+                    placeholder="4–6 digits"
+                    className="w-full rounded-xl border border-border-warm bg-white px-3 py-2 font-mono text-sm text-char"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-border-warm">
+                <button
+                  type="button"
+                  onClick={() => setEditingStaff(null)}
+                  className="rounded-xl border border-border-warm bg-white px-4 py-2 text-xs font-bold text-char cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="rounded-xl bg-ember hover:bg-ember-dark disabled:opacity-60 px-5 py-2 text-xs font-bold text-cream cursor-pointer"
+                >
+                  {isPending ? 'Saving…' : 'Save Credentials'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

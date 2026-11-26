@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Plus, AlertTriangle, Scale, BookOpen } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Plus, AlertTriangle, Scale, BookOpen, Pencil, X } from 'lucide-react';
 import {
   createInventoryItemAction,
   postInventoryAdjustmentAction,
   addRecipeLineAction,
+  updateInventoryItemAction,
 } from '@/modules/admin/actions';
 import { formatAUD } from '@/lib/money';
 import { formatStoreDateTime } from '@/lib/time';
@@ -17,6 +19,7 @@ interface InventoryData {
     code: string;
     name: string;
     description: string;
+    imageUrl: string | null;
     unit: string;
     onHand: number;
     minThreshold: number;
@@ -56,8 +59,10 @@ export function InventoryManager({
   data: InventoryData;
   canAdjust: boolean;
 }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [editingIng, setEditingIng] = useState<InventoryData['inventoryItems'][number] | null>(null);
 
   // Add item form
   const [code, setCode] = useState('');
@@ -530,6 +535,145 @@ export function InventoryManager({
                 className="w-full rounded-xl bg-char px-4 py-2.5 text-sm font-semibold text-cream transition hover:bg-char-soft disabled:opacity-60"
               >
                 Link Recipe Ingredient
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Edit Ingredients Strip (with Picture URL) */}
+      {canAdjust && (
+        <div className="rounded-2xl border border-border-warm bg-white p-5 shadow-xs space-y-3">
+          <h2 className="font-display text-lg font-bold text-char">Edit Ingredients &amp; Pictures</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {data.inventoryItems.map((ing) => (
+              <div
+                key={ing.id}
+                className="flex items-center justify-between gap-2 rounded-xl border border-border-warm bg-cream/50 px-3 py-2 text-xs"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {ing.imageUrl && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={ing.imageUrl}
+                      alt={ing.name}
+                      className="h-8 w-8 rounded-lg object-cover border border-border-warm shrink-0"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-semibold text-char truncate">{ing.name}</p>
+                    <p className="font-mono text-[10px] text-smoke">
+                      {ing.code} · {ing.onHand} {ing.unit}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingIng(ing)}
+                  className="inline-flex items-center gap-1 rounded-lg border border-border-warm bg-white px-2.5 py-1 text-[11px] font-bold text-char hover:bg-cream-deep cursor-pointer shrink-0"
+                >
+                  <Pencil className="h-3 w-3" /> Edit
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Ingredient Modal */}
+      {editingIng && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-char/60 p-4 backdrop-blur-xs">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              startTransition(async () => {
+                const res = await updateInventoryItemAction({
+                  inventoryItemId: editingIng.id,
+                  name: editingIng.name,
+                  code: editingIng.code,
+                  description: editingIng.description,
+                  imageUrl: editingIng.imageUrl,
+                  minThreshold: editingIng.minThreshold,
+                  costPerUnitCents: editingIng.costPerUnitCents,
+                });
+                if (res.ok) {
+                  setEditingIng(null);
+                  setFeedback({ type: 'ok', text: `Ingredient "${res.data.name}" updated.` });
+                  router.refresh();
+                } else {
+                  setFeedback({ type: 'err', text: res.error.message });
+                }
+              });
+            }}
+            className="w-full max-w-md rounded-2xl border border-border-warm bg-cream p-6 shadow-2xl space-y-3"
+          >
+            <div className="flex items-center justify-between border-b border-border-warm pb-2">
+              <h3 className="font-display text-xl font-bold text-char">Edit Ingredient</h3>
+              <button type="button" onClick={() => setEditingIng(null)} className="cursor-pointer">
+                <X className="h-5 w-5 text-smoke" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-smoke mb-1">Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editingIng.name}
+                  onChange={(e) => setEditingIng({ ...editingIng, name: e.target.value })}
+                  className="w-full rounded-xl border border-border-warm bg-white px-3 py-2 text-sm text-char"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-smoke mb-1">Code</label>
+                <input
+                  type="text"
+                  required
+                  value={editingIng.code}
+                  onChange={(e) => setEditingIng({ ...editingIng, code: e.target.value })}
+                  className="w-full rounded-xl border border-border-warm bg-white px-3 py-2 font-mono text-sm text-char"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold uppercase text-smoke mb-1">Picture URL (optional)</label>
+              <input
+                type="text"
+                value={editingIng.imageUrl ?? ''}
+                onChange={(e) => setEditingIng({ ...editingIng, imageUrl: e.target.value })}
+                placeholder="/images/sides-chips.jpg or https://..."
+                className="w-full rounded-xl border border-border-warm bg-white px-3 py-2 font-mono text-xs text-char"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-smoke mb-1">Min Threshold ({editingIng.unit})</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min={0}
+                  value={editingIng.minThreshold}
+                  onChange={(e) => setEditingIng({ ...editingIng, minThreshold: Number(e.target.value) })}
+                  className="w-full rounded-xl border border-border-warm bg-white px-3 py-2 font-mono text-sm text-char"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-smoke mb-1">Unit Cost (Cents)</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={editingIng.costPerUnitCents}
+                  onChange={(e) => setEditingIng({ ...editingIng, costPerUnitCents: Number(e.target.value) })}
+                  className="w-full rounded-xl border border-border-warm bg-white px-3 py-2 font-mono text-sm text-char"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={() => setEditingIng(null)} className="rounded-xl border border-border-warm bg-white px-4 py-2 text-xs font-bold cursor-pointer">
+                Cancel
+              </button>
+              <button type="submit" disabled={isPending} className="rounded-xl bg-ember px-5 py-2 text-xs font-bold text-cream cursor-pointer">
+                Save Ingredient
               </button>
             </div>
           </form>

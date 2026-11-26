@@ -12,7 +12,7 @@ import {
   X,
   Truck,
   Store,
-  Shield,
+  PackageSearch,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatAUD } from '@/lib/money';
@@ -145,23 +145,22 @@ export function StoreHeader({
               <span className="ml-1 text-ember font-bold">Change</span>
             </button>
 
+            {/* Track Order Link */}
+            <Link
+              href="/track"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-border-warm bg-white px-3 py-1.5 text-xs font-semibold text-char hover:border-ember hover:text-ember transition"
+            >
+              <PackageSearch className="h-3.5 w-3.5 text-ember" />
+              <span>Track Order</span>
+            </Link>
+
             {/* Account Link */}
             <Link
-              href={customerName ? '/account' : '/login'}
+              href={customerName ? '/account' : '/account/login'}
               className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-border-warm bg-white px-3 py-1.5 text-xs font-semibold text-char hover:border-char transition"
             >
               <User className="h-3.5 w-3.5 text-smoke" />
               <span className="max-w-[96px] truncate">{customerName || 'Account'}</span>
-            </Link>
-
-            {/* Subtle Staff Portal Link */}
-            <Link
-              href="/staff/login"
-              className="hidden xl:inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium text-smoke hover:bg-cream-deep hover:text-char transition"
-              title="Staff Portal (Till, Kitchen, Admin)"
-            >
-              <Shield className="h-3.5 w-3.5" />
-              <span>Staff Portal</span>
             </Link>
 
             {/* Basket Button */}
@@ -229,18 +228,18 @@ export function StoreHeader({
                 </Link>
               ))}
               <Link
-                href={customerName ? '/account' : '/login'}
+                href="/track"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-xl px-3.5 py-2.5 text-sm font-semibold text-char hover:bg-cream-deep"
+              >
+                Track Order
+              </Link>
+              <Link
+                href={customerName ? '/account' : '/account/login'}
                 onClick={() => setMobileOpen(false)}
                 className="rounded-xl px-3.5 py-2.5 text-sm font-semibold text-char hover:bg-cream-deep"
               >
                 {customerName ? `Account (${customerName})` : 'Sign In / Star Rewards'}
-              </Link>
-              <Link
-                href="/staff/login"
-                onClick={() => setMobileOpen(false)}
-                className="rounded-xl px-3.5 py-2.5 text-xs font-medium text-smoke hover:bg-cream-deep"
-              >
-                Staff Portal (Till / Kitchen / Admin)
               </Link>
             </nav>
           </div>
