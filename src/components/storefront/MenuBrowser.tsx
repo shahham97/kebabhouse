@@ -145,12 +145,22 @@ export function MenuBrowser({ categories, initialCategorySlug }: MenuBrowserProp
       ) : (
         <div className="space-y-12">
           {filteredCategories.map((cat) => (
-            <section key={cat.id} id={cat.slug} className="scroll-mt-44 space-y-5">
-              <div className="border-b border-border-warm pb-3">
-                <h2 className="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-wide text-char">
-                  {cat.name}
-                </h2>
-                {cat.description && <p className="mt-1 text-sm text-smoke">{cat.description}</p>}
+            <section
+              key={cat.id}
+              id={cat.slug}
+              className="scroll-mt-44 space-y-5"
+              style={{ contentVisibility: 'auto', containIntrinsicSize: '0 420px' }}
+            >
+              <div className="border-b border-border-warm pb-3 flex items-baseline justify-between gap-3">
+                <div>
+                  <h2 className="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-wide text-char">
+                    {cat.name}
+                  </h2>
+                  {cat.description && <p className="mt-1 text-sm text-smoke">{cat.description}</p>}
+                </div>
+                <span className="shrink-0 font-mono text-xs font-semibold text-smoke">
+                  {cat.products.length} {cat.products.length === 1 ? 'item' : 'items'}
+                </span>
               </div>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -191,7 +201,7 @@ export function BestSellerGrid({ products }: { products: PublicProduct[] }) {
   );
 }
 
-function ProductCard({
+const ProductCard = React.memo(function ProductCard({
   product,
   onSelect,
 }: {
@@ -364,4 +374,4 @@ function ProductCard({
       </div>
     </article>
   );
-}
+});

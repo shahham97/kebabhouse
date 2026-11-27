@@ -28,14 +28,28 @@ export const dynamic = 'force-dynamic';
 
 const CATEGORY_FALLBACK_IMAGES: Record<string, string> = {
   kebabs: '/images/kebab-wrap.jpg',
+  'kebab-rolls': '/images/kebab-wrap.jpg',
   'charcoal-kebabs': '/images/kebab-wrap.jpg',
   hsp: '/images/hsp-box.jpg',
+  'snack-packs': '/images/hsp-box.jpg',
   'halal-snack-packs': '/images/hsp-box.jpg',
   pide: '/images/turkish-pizza.jpg',
   'turkish-pide': '/images/turkish-pizza.jpg',
+  'turkish-pides': '/images/turkish-pizza.jpg',
+  'gourmet-pizzas': '/images/turkish-pizza.jpg',
+  gozleme: '/images/turkish-pizza.jpg',
   plates: '/images/grill-plate.jpg',
   'grill-plates': '/images/grill-plate.jpg',
+  'mains-skewers': '/images/grill-plate.jpg',
+  'lunch-boxes': '/images/grill-plate.jpg',
+  burgers: '/images/kebab-wrap.jpg',
+  banquets: '/images/grill-plate.jpg',
   sides: '/images/sides-chips.jpg',
+  'hot-entrees': '/images/sides-chips.jpg',
+  'homemade-dips': '/images/sides-chips.jpg',
+  'bread-and-kids': '/images/turkish-pizza.jpg',
+  beverages: '/images/sides-chips.jpg',
+  desserts: '/images/sides-chips.jpg',
 };
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

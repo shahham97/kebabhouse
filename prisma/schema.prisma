@@ -390,10 +390,11 @@ model Product {
   spicyLevel  Int      @default(0) // 0..3
   taxCode     String   @default("GST") // GST | GST_FREE
   visibility  String   @default("BOTH") // WEB | TILL | BOTH
-  active      Boolean  @default(true)
-  soldOut     Boolean  @default(false) // 86 toggle
-  isBestSeller Boolean @default(false)
-  sortOrder   Int      @default(0)
+  active         Boolean  @default(true)
+  soldOut        Boolean  @default(false) // 86 toggle
+  isBestSeller   Boolean  @default(false)
+  isMultiVariant Boolean  @default(true)
+  sortOrder      Int      @default(0)
   createdAt   DateTime @default(now()) @db.DateTime(3)
   updatedAt   DateTime @updatedAt @db.DateTime(3)
 

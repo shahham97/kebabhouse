@@ -86,6 +86,7 @@ const createProductSchema = z.object({
   taxCode: z.enum(['GST', 'GST_FREE']).default('GST'),
   visibility: z.enum(['WEB', 'TILL', 'BOTH']).default('BOTH'),
   isBestSeller: z.boolean().optional().default(false),
+  isMultiVariant: z.boolean().optional().default(true),
   defaultVariantName: z.string().trim().min(1).max(60).default('Regular'),
   defaultPriceCents: z.number().int().min(0, 'Price must be >= 0'),
   defaultPrepMinutes: z.number().int().min(1).max(180).default(8),
@@ -105,6 +106,7 @@ export const createProductAction = defineAction({
 
     const slug = `${slugify(input.name)}-${crypto.randomBytes(2).toString('hex')}`;
     const sku = `SK-${slugify(input.name).slice(0, 8).toUpperCase()}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+    const variantLabel = input.isMultiVariant ? input.defaultVariantName : 'Standard';
 
     const product = await db.product.create({
       data: {
@@ -117,9 +119,10 @@ export const createProductAction = defineAction({
         taxCode: input.taxCode,
         visibility: input.visibility,
         isBestSeller: input.isBestSeller,
+        isMultiVariant: input.isMultiVariant,
         variants: {
           create: {
-            name: input.defaultVariantName,
+            name: variantLabel,
             sku,
             priceCents: input.defaultPriceCents,
             prepMinutes: input.defaultPrepMinutes,
@@ -1190,6 +1193,7 @@ export const updateProductAction = defineAction({
     categoryId: z.string().min(1),
     spicyLevel: z.number().int().min(0).max(3).default(0),
     isBestSeller: z.boolean().default(false),
+    isMultiVariant: z.boolean().optional(),
     active: z.boolean().default(true),
   }),
   handler: async (input, { actor, db }) => {
@@ -1208,6 +1212,7 @@ export const updateProductAction = defineAction({
         categoryId: input.categoryId,
         spicyLevel: input.spicyLevel,
         isBestSeller: input.isBestSeller,
+        ...(input.isMultiVariant !== undefined ? { isMultiVariant: input.isMultiVariant } : {}),
         active: input.active,
       },
     });

@@ -403,6 +403,7 @@ export async function getAdminCatalog(storeId: string) {
       active: p.active,
       soldOut: p.soldOut,
       isBestSeller: p.isBestSeller,
+      isMultiVariant: p.isMultiVariant,
       variants: p.variants.map((v) => {
         const avail = computeVariantAvailability({
           active: v.active,

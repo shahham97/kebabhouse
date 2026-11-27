@@ -43,6 +43,7 @@ interface CatalogData {
     active: boolean;
     soldOut: boolean;
     isBestSeller: boolean;
+    isMultiVariant: boolean;
     variants: Array<{
       id: string;
       name: string;
@@ -74,6 +75,7 @@ export function CatalogManager({ data }: { data: CatalogData }) {
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('ALL');
+  const [productSearch, setProductSearch] = useState('');
 
   // Edit modals state
   const [editingCat, setEditingCat] = useState<CatalogData['categories'][number] | null>(null);
@@ -92,8 +94,9 @@ export function CatalogManager({ data }: { data: CatalogData }) {
   const [prodCategoryId, setProdCategoryId] = useState(data.categories[0]?.id ?? '');
   const [prodStationId, setProdStationId] = useState('');
   const [prodDesc, setProdDesc] = useState('');
+  const [prodIsMultiVariant, setProdIsMultiVariant] = useState(false);
   const [prodVariantName, setProdVariantName] = useState('Regular');
-  const [prodPriceDollars, setProdPriceDollars] = useState('14.50');
+  const [prodPriceDollars, setProdPriceDollars] = useState('16.00');
   const [prodPrepMins, setProdPrepMins] = useState('8');
   const [prodTaxCode, setProdTaxCode] = useState<'GST' | 'GST_FREE'>('GST');
   const [prodVisibility, setProdVisibility] = useState<'WEB' | 'TILL' | 'BOTH'>('BOTH');
@@ -137,7 +140,8 @@ export function CatalogManager({ data }: { data: CatalogData }) {
         description: prodDesc,
         taxCode: prodTaxCode,
         visibility: prodVisibility,
-        defaultVariantName: prodVariantName || 'Regular',
+        isMultiVariant: prodIsMultiVariant,
+        defaultVariantName: prodIsMultiVariant ? prodVariantName || 'Regular' : 'Standard',
         defaultPriceCents: cents,
         defaultPrepMinutes: Number(prodPrepMins) || 8,
       });
@@ -145,6 +149,7 @@ export function CatalogManager({ data }: { data: CatalogData }) {
         setProdName('');
         setProdDesc('');
         showMsg('ok', `Product "${res.data.name}" created.`);
+        router.refresh();
       } else {
         showMsg('err', res.error.message);
       }
@@ -174,10 +179,16 @@ export function CatalogManager({ data }: { data: CatalogData }) {
     });
   };
 
-  const filteredProducts =
-    selectedCategoryFilter === 'ALL'
-      ? data.products
-      : data.products.filter((p) => p.categoryId === selectedCategoryFilter);
+  const filteredProducts = data.products.filter((p) => {
+    if (selectedCategoryFilter !== 'ALL' && p.categoryId !== selectedCategoryFilter) return false;
+    const q = productSearch.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      p.name.toLowerCase().includes(q) ||
+      p.categoryName.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="space-y-6">
@@ -244,7 +255,38 @@ export function CatalogManager({ data }: { data: CatalogData }) {
           onSubmit={handleCreateProduct}
           className="rounded-2xl border border-border-warm bg-white p-5 shadow-xs lg:col-span-2"
         >
-          <h2 className="font-display text-lg font-bold text-char">New Menu Product</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-display text-lg font-bold text-char">New Menu Product</h2>
+            <div className="inline-flex rounded-xl border border-border-warm bg-cream p-1">
+              <button
+                type="button"
+                onClick={() => setProdIsMultiVariant(false)}
+                className={`rounded-lg px-3 py-1 text-xs font-bold transition cursor-pointer ${
+                  !prodIsMultiVariant
+                    ? 'bg-char text-saffron shadow-xs'
+                    : 'text-smoke hover:text-char'
+                }`}
+              >
+                Single Item
+              </button>
+              <button
+                type="button"
+                onClick={() => setProdIsMultiVariant(true)}
+                className={`rounded-lg px-3 py-1 text-xs font-bold transition cursor-pointer ${
+                  prodIsMultiVariant
+                    ? 'bg-ember text-cream shadow-xs'
+                    : 'text-smoke hover:text-char'
+                }`}
+              >
+                Multi-Variant
+              </button>
+            </div>
+          </div>
+          <p className="mt-1 text-xs text-smoke">
+            {prodIsMultiVariant
+              ? 'Multi-Variant ON: create with an initial variant (e.g. Regular) and add more sizes/variants afterwards.'
+              : 'Single Item (Atomic): creates one standalone product with product-level price, disable, stock-out & coming-soon controls.'}
+          </p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="block text-xs font-semibold text-smoke">Product Name</label>
@@ -287,17 +329,19 @@ export function CatalogManager({ data }: { data: CatalogData }) {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-smoke">First Variant</label>
-              <input
-                type="text"
-                required
-                value={prodVariantName}
-                onChange={(e) => setProdVariantName(e.target.value)}
-                placeholder="Regular"
-                className="mt-1 w-full rounded-xl border border-border-warm bg-cream px-3 py-2 text-sm text-char focus:border-ember focus:outline-none"
-              />
-            </div>
+            {prodIsMultiVariant && (
+              <div>
+                <label className="block text-xs font-semibold text-smoke">First Variant</label>
+                <input
+                  type="text"
+                  required
+                  value={prodVariantName}
+                  onChange={(e) => setProdVariantName(e.target.value)}
+                  placeholder="Regular"
+                  className="mt-1 w-full rounded-xl border border-border-warm bg-cream px-3 py-2 text-sm text-char focus:border-ember focus:outline-none"
+                />
+              </div>
+            )}
             <div>
               <label className="block text-xs font-semibold text-smoke">Price (AUD $)</label>
               <input
@@ -370,38 +414,50 @@ export function CatalogManager({ data }: { data: CatalogData }) {
         </form>
       </div>
 
-      {/* Category Filter Pills */}
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setSelectedCategoryFilter('ALL')}
-          className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-            selectedCategoryFilter === 'ALL'
-              ? 'bg-char text-cream'
-              : 'border border-border-warm bg-white text-char hover:bg-cream-deep'
-          }`}
-        >
-          All Categories ({data.products.length})
-        </button>
-        {data.categories.map((c) => (
+      {/* Search & Category Filter Pills */}
+      <div className="space-y-3">
+        <input
+          type="search"
+          value={productSearch}
+          onChange={(e) => setProductSearch(e.target.value)}
+          placeholder="Search products by name, category, or description..."
+          className="w-full max-w-md rounded-xl border border-border-warm bg-white px-3.5 py-2 text-sm text-char placeholder:text-smoke/70 focus:border-ember focus:outline-none"
+        />
+        <div className="flex flex-wrap items-center gap-2">
           <button
-            key={c.id}
             type="button"
-            onClick={() => setSelectedCategoryFilter(c.id)}
-            className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-              selectedCategoryFilter === c.id
-                ? 'bg-ember text-cream'
+            onClick={() => setSelectedCategoryFilter('ALL')}
+            className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              selectedCategoryFilter === 'ALL'
+                ? 'bg-char text-cream'
                 : 'border border-border-warm bg-white text-char hover:bg-cream-deep'
             }`}
           >
-            {c.name} ({c.productCount})
+            All Categories ({data.products.length})
           </button>
-        ))}
+          {data.categories.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setSelectedCategoryFilter(c.id)}
+              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                selectedCategoryFilter === c.id
+                  ? 'bg-ember text-cream'
+                  : 'border border-border-warm bg-white text-char hover:bg-cream-deep'
+              }`}
+            >
+              {c.name} ({c.productCount})
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Products List */}
       <div className="space-y-4">
-        {filteredProducts.map((p) => (
+        {filteredProducts.map((p) => {
+          const isAtomic = !p.isMultiVariant && p.variants.length === 1;
+          const atomicVar = isAtomic ? p.variants[0] : null;
+          return (
           <div
             key={p.id}
             className={`rounded-2xl border bg-white p-5 shadow-xs transition ${
@@ -415,6 +471,20 @@ export function CatalogManager({ data }: { data: CatalogData }) {
                   <span className="rounded-md bg-cream px-2 py-0.5 text-xs font-medium text-smoke">
                     {p.categoryName}
                   </span>
+                  <span
+                    className={`rounded-md px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${
+                      isAtomic
+                        ? 'bg-char/10 text-char'
+                        : 'bg-ember/15 text-ember'
+                    }`}
+                  >
+                    {isAtomic ? 'Single Item' : `${p.variants.length} Variants`}
+                  </span>
+                  {atomicVar && (
+                    <span className="font-mono text-sm font-bold text-char tabular-nums">
+                      {formatAUD(atomicVar.priceCents)}
+                    </span>
+                  )}
                   {p.stationName && (
                     <span className="rounded-md bg-saffron/20 px-2 py-0.5 font-mono text-[11px] font-semibold text-char">
                       {p.stationName}
@@ -423,12 +493,34 @@ export function CatalogManager({ data }: { data: CatalogData }) {
                   <span className="rounded-md border border-border-warm px-2 py-0.5 font-mono text-[11px] text-smoke">
                     {p.taxCode} · {p.visibility}
                   </span>
-                  {p.soldOut && (
-                    <span className="rounded-md bg-chilli px-2 py-0.5 font-mono text-[11px] font-bold text-cream">
-                      86 SOLD OUT
+                  {atomicVar && (
+                    <span
+                      className={`font-mono text-[11px] ${
+                        atomicVar.maxServings === null
+                          ? 'text-smoke'
+                          : atomicVar.maxServings <= 0
+                            ? 'font-bold text-chilli'
+                            : atomicVar.maxServings <= 5
+                              ? 'font-bold text-ember'
+                              : 'font-bold text-herb'
+                      }`}
+                    >
+                      {atomicVar.maxServings === null
+                        ? 'Stock: Unlimited'
+                        : `Stock: ${atomicVar.maxServings} left`}
                     </span>
                   )}
-                  {!p.active && (
+                  {atomicVar?.comingSoon && (
+                    <span className="rounded-md bg-saffron/35 px-2 py-0.5 font-mono text-[11px] font-bold text-char">
+                      COMING SOON
+                    </span>
+                  )}
+                  {(p.soldOut || atomicVar?.computedOutOfStock) && (
+                    <span className="rounded-md bg-chilli px-2 py-0.5 font-mono text-[11px] font-bold text-cream">
+                      STOCK OUT
+                    </span>
+                  )}
+                  {(!p.active || (atomicVar && !atomicVar.active && !atomicVar.comingSoon)) && (
                     <span className="rounded-md bg-char px-2 py-0.5 font-mono text-[11px] font-bold text-cream">
                       DISABLED
                     </span>
@@ -438,43 +530,147 @@ export function CatalogManager({ data }: { data: CatalogData }) {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  disabled={isPending}
-                  onClick={() =>
-                    startTransition(async () => {
-                      const res = await toggleProductSoldOutAction({ id: p.id });
-                      if (!res.ok) showMsg('err', res.error.message);
-                    })
-                  }
-                  className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
-                    p.soldOut
-                      ? 'bg-chilli text-cream hover:bg-chilli/90'
-                      : 'border border-border-warm bg-cream text-char hover:bg-cream-deep'
-                  }`}
-                >
-                  <Flame className="h-3.5 w-3.5" />
-                  {p.soldOut ? 'Clear 86' : 'Mark 86'}
-                </button>
+                {atomicVar ? (
+                  <>
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() =>
+                        startTransition(async () => {
+                          const res = await updateVariantAction({
+                            variantId: atomicVar.id,
+                            name: atomicVar.name,
+                            sku: atomicVar.sku,
+                            priceCents: atomicVar.priceCents,
+                            prepMinutes: atomicVar.prepMinutes,
+                            active: atomicVar.active,
+                            soldOut: !atomicVar.soldOut,
+                            comingSoon: atomicVar.comingSoon,
+                          });
+                          if (res.ok) router.refresh();
+                          else showMsg('err', res.error.message);
+                        })
+                      }
+                      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                        atomicVar.soldOut
+                          ? 'bg-chilli text-cream hover:bg-chilli/90'
+                          : 'border border-border-warm bg-cream text-char hover:bg-cream-deep'
+                      }`}
+                    >
+                      <Flame className="h-3.5 w-3.5" />
+                      {atomicVar.soldOut ? 'Stock Out: ON' : 'Stock Out'}
+                    </button>
 
-                <button
-                  type="button"
-                  disabled={isPending}
-                  onClick={() =>
-                    startTransition(async () => {
-                      const res = await toggleProductActiveAction({ id: p.id });
-                      if (!res.ok) showMsg('err', res.error.message);
-                    })
-                  }
-                  className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
-                    p.active
-                      ? 'border border-border-warm bg-white text-char hover:bg-cream'
-                      : 'bg-herb text-cream hover:bg-herb/90'
-                  }`}
-                >
-                  <Power className="h-3.5 w-3.5" />
-                  {p.active ? 'Disable' : 'Enable'}
-                </button>
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() =>
+                        startTransition(async () => {
+                          const nextComingSoon = !atomicVar.comingSoon;
+                          const res = await updateVariantAction({
+                            variantId: atomicVar.id,
+                            name: atomicVar.name,
+                            sku: atomicVar.sku,
+                            priceCents: atomicVar.priceCents,
+                            prepMinutes: atomicVar.prepMinutes,
+                            active: nextComingSoon ? false : true,
+                            soldOut: atomicVar.soldOut,
+                            comingSoon: nextComingSoon,
+                          });
+                          if (res.ok) router.refresh();
+                          else showMsg('err', res.error.message);
+                        })
+                      }
+                      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                        atomicVar.comingSoon
+                          ? 'bg-saffron text-char'
+                          : 'border border-border-warm bg-cream text-char hover:bg-cream-deep'
+                      }`}
+                    >
+                      <Clock className="h-3.5 w-3.5" />
+                      {atomicVar.comingSoon ? 'Coming Soon: ON' : 'Coming Soon'}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() =>
+                        startTransition(async () => {
+                          const nextActive = !atomicVar.active;
+                          const res = await updateVariantAction({
+                            variantId: atomicVar.id,
+                            name: atomicVar.name,
+                            sku: atomicVar.sku,
+                            priceCents: atomicVar.priceCents,
+                            prepMinutes: atomicVar.prepMinutes,
+                            active: nextActive,
+                            soldOut: atomicVar.soldOut,
+                            comingSoon: nextActive ? false : atomicVar.comingSoon,
+                          });
+                          if (res.ok) router.refresh();
+                          else showMsg('err', res.error.message);
+                        })
+                      }
+                      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                        atomicVar.active
+                          ? 'border border-border-warm bg-white text-char hover:bg-cream'
+                          : 'bg-herb text-cream hover:bg-herb/90'
+                      }`}
+                    >
+                      <Power className="h-3.5 w-3.5" />
+                      {atomicVar.active ? 'Disable' : 'Enable'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setEditingVar({ productName: p.name, variant: atomicVar })}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-border-warm bg-white px-3 py-1.5 text-xs font-semibold text-char transition hover:bg-cream cursor-pointer"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      Price &amp; Prep
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() =>
+                        startTransition(async () => {
+                          const res = await toggleProductSoldOutAction({ id: p.id });
+                          if (!res.ok) showMsg('err', res.error.message);
+                        })
+                      }
+                      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                        p.soldOut
+                          ? 'bg-chilli text-cream hover:bg-chilli/90'
+                          : 'border border-border-warm bg-cream text-char hover:bg-cream-deep'
+                      }`}
+                    >
+                      <Flame className="h-3.5 w-3.5" />
+                      {p.soldOut ? 'Clear 86' : 'Mark 86'}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() =>
+                        startTransition(async () => {
+                          const res = await toggleProductActiveAction({ id: p.id });
+                          if (!res.ok) showMsg('err', res.error.message);
+                        })
+                      }
+                      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                        p.active
+                          ? 'border border-border-warm bg-white text-char hover:bg-cream'
+                          : 'bg-herb text-cream hover:bg-herb/90'
+                      }`}
+                    >
+                      <Power className="h-3.5 w-3.5" />
+                      {p.active ? 'Disable' : 'Enable'}
+                    </button>
+                  </>
+                )}
 
                 <button
                   type="button"
@@ -485,20 +681,23 @@ export function CatalogManager({ data }: { data: CatalogData }) {
                   Edit Product
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setAddingVariantFor(addingVariantFor === p.id ? null : p.id)
-                  }
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-char px-3 py-1.5 text-xs font-semibold text-cream transition hover:bg-char-soft cursor-pointer"
-                >
-                  <Layers className="h-3.5 w-3.5" />
-                  Add Variant
-                </button>
+                {!isAtomic && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setAddingVariantFor(addingVariantFor === p.id ? null : p.id)
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-char px-3 py-1.5 text-xs font-semibold text-cream transition hover:bg-char-soft cursor-pointer"
+                  >
+                    <Layers className="h-3.5 w-3.5" />
+                    Add Variant
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Variants (with Admin/Staff Live Stock Count + Disable / Stock Out / Coming Soon) */}
+            {/* Variants (only shown for Multi-Variant products) */}
+            {!isAtomic && (
             <div className="mt-4 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
               {p.variants.map((v) => (
                 <div
@@ -651,9 +850,10 @@ export function CatalogManager({ data }: { data: CatalogData }) {
                 </div>
               ))}
             </div>
+            )}
 
             {/* Inline Add Variant Form */}
-            {addingVariantFor === p.id && (
+            {!isAtomic && addingVariantFor === p.id && (
               <div className="mt-3 flex flex-wrap items-end gap-3 rounded-xl border border-ember/30 bg-cream p-3">
                 <div className="min-w-[140px] flex-1">
                   <label className="block text-[11px] font-semibold text-smoke">Variant Name</label>
@@ -697,7 +897,8 @@ export function CatalogManager({ data }: { data: CatalogData }) {
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
       {/* Category Edit Strip */}
       <div className="rounded-2xl border border-border-warm bg-white p-5 shadow-xs space-y-3">
@@ -816,6 +1017,7 @@ export function CatalogManager({ data }: { data: CatalogData }) {
                   categoryId: editingProd.categoryId,
                   spicyLevel: editingProd.spicyLevel,
                   isBestSeller: editingProd.isBestSeller,
+                  isMultiVariant: editingProd.isMultiVariant,
                   active: editingProd.active,
                 });
                 if (res.ok) {
@@ -906,6 +1108,15 @@ export function CatalogManager({ data }: { data: CatalogData }) {
                   className="accent-ember"
                 />
                 Best Seller
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={editingProd.isMultiVariant}
+                  onChange={(e) => setEditingProd({ ...editingProd, isMultiVariant: e.target.checked })}
+                  className="accent-ember"
+                />
+                Multi-Variant Mode
               </label>
               <label className="flex items-center gap-2">
                 <input

@@ -52,6 +52,7 @@ export interface PublicProduct {
   spicyLevel: number;
   soldOut: boolean;
   isBestSeller: boolean;
+  isMultiVariant: boolean;
   variants: PublicVariant[];
   modifierGroups: PublicModifierGroup[];
 }
@@ -83,6 +84,7 @@ function mapProduct(
     spicyLevel: number;
     soldOut: boolean;
     isBestSeller: boolean;
+    isMultiVariant: boolean;
     category?: { name: string };
     variants: Array<{
       id: string;
@@ -130,6 +132,7 @@ function mapProduct(
     spicyLevel: p.spicyLevel,
     soldOut: p.soldOut,
     isBestSeller: p.isBestSeller,
+    isMultiVariant: p.isMultiVariant,
     variants: p.variants.map((v) => {
       const avail = computeVariantAvailability({
         active: v.active,
@@ -244,19 +247,45 @@ async function fetchPublicMenu(): Promise<PublicMenuCategory[]> {
   const categories = await db.category.findMany({
     where: { storeId: store.id, showInMenu: true },
     orderBy: { sortOrder: 'asc' },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      imageUrl: true,
       products: {
         where: {
           active: true,
           visibility: { in: ['WEB', 'BOTH'] },
         },
         orderBy: { sortOrder: 'asc' },
-        include: {
+        select: {
+          id: true,
+          categoryId: true,
+          name: true,
+          slug: true,
+          description: true,
+          imageUrl: true,
+          tagsJson: true,
+          allergensJson: true,
+          spicyLevel: true,
+          soldOut: true,
+          isBestSeller: true,
+          isMultiVariant: true,
           variants: {
             orderBy: { sortOrder: 'asc' },
-            include: {
+            select: {
+              id: true,
+              name: true,
+              sku: true,
+              priceCents: true,
+              prepMinutes: true,
+              active: true,
+              soldOut: true,
+              comingSoon: true,
               recipeLines: {
-                include: {
+                select: {
+                  quantity: true,
                   inventoryItem: { select: { onHand: true } },
                 },
               },
@@ -264,12 +293,24 @@ async function fetchPublicMenu(): Promise<PublicMenuCategory[]> {
           },
           modifierGroups: {
             orderBy: { sortOrder: 'asc' },
-            include: {
+            select: {
               modifierGroup: {
-                include: {
+                select: {
+                  id: true,
+                  name: true,
+                  minSelect: true,
+                  maxSelect: true,
+                  required: true,
                   options: {
                     where: { active: true },
                     orderBy: { sortOrder: 'asc' },
+                    select: {
+                      id: true,
+                      name: true,
+                      priceDeltaCents: true,
+                      isDefault: true,
+                      soldOut: true,
+                    },
                   },
                 },
               },
@@ -382,13 +423,34 @@ async function fetchBestSellers(): Promise<PublicProduct[]> {
     },
     orderBy: { sortOrder: 'asc' },
     take: 8,
-    include: {
+    select: {
+      id: true,
+      categoryId: true,
+      name: true,
+      slug: true,
+      description: true,
+      imageUrl: true,
+      tagsJson: true,
+      allergensJson: true,
+      spicyLevel: true,
+      soldOut: true,
+      isBestSeller: true,
+      isMultiVariant: true,
       category: { select: { name: true } },
       variants: {
         orderBy: { sortOrder: 'asc' },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          sku: true,
+          priceCents: true,
+          prepMinutes: true,
+          active: true,
+          soldOut: true,
+          comingSoon: true,
           recipeLines: {
-            include: {
+            select: {
+              quantity: true,
               inventoryItem: { select: { onHand: true } },
             },
           },
@@ -396,12 +458,24 @@ async function fetchBestSellers(): Promise<PublicProduct[]> {
       },
       modifierGroups: {
         orderBy: { sortOrder: 'asc' },
-        include: {
+        select: {
           modifierGroup: {
-            include: {
+            select: {
+              id: true,
+              name: true,
+              minSelect: true,
+              maxSelect: true,
+              required: true,
               options: {
                 where: { active: true },
                 orderBy: { sortOrder: 'asc' },
+                select: {
+                  id: true,
+                  name: true,
+                  priceDeltaCents: true,
+                  isDefault: true,
+                  soldOut: true,
+                },
               },
             },
           },
