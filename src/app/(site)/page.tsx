@@ -52,65 +52,97 @@ export default async function HomePage() {
     <div className="bg-cream text-char">
       {/* EDITORIAL HERO */}
       <section className="relative overflow-hidden bg-char text-cream">
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 overflow-hidden">
           <Image
             src={ctx.store.heroImageUrl || '/images/hero-grill.jpg'}
             alt="Star Kebab live charcoal spit and grill"
             fill
             priority
-            className="object-cover object-center opacity-70"
+            className="hero-bg-float object-cover object-center opacity-55"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-char via-char/85 to-char/35" />
-          <div className="absolute inset-0 bg-gradient-to-t from-char via-transparent to-char/40" />
+          <div className="absolute inset-0 bg-gradient-to-r from-char via-char/88 to-char/50" />
+          <div className="absolute inset-0 bg-gradient-to-t from-char via-transparent to-char/45" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-28 lg:py-32">
-          <div className="max-w-2xl space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-saffron/40 bg-char/70 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-saffron backdrop-blur-xs">
-              <Flame className="h-3.5 w-3.5 text-ember" />
-              100% Halal · Ironbark Charcoal · Newtown
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-24 lg:py-28">
+          <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-10 lg:gap-12">
+            <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-2 rounded-full border border-saffron/40 bg-char/70 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-saffron backdrop-blur-xs">
+                <Flame className="h-3.5 w-3.5 text-ember" />
+                100% Halal · Ironbark Charcoal · Newtown
+              </div>
+
+              <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl font-extrabold uppercase leading-[0.95] tracking-tight text-cream drop-shadow-lg">
+                CARVED OFF THE{' '}
+                <span className="text-saffron">CHARCOAL</span> SPIT
+              </h1>
+
+              <p className="max-w-xl text-base sm:text-lg leading-relaxed text-cream/85">
+                Hand-stacked lamb &amp; chicken doner roasted slow over live Australian ironbark,
+                loaded Halal Snack Packs dripping in garlic toum, and blistered stone-baked Turkish
+                pide.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Link
+                  href="/menu"
+                  className="inline-flex items-center gap-2.5 rounded-full bg-ember px-7 py-4 font-display text-xl font-bold uppercase tracking-wide text-cream shadow-xl shadow-ember/30 transition hover:bg-ember-dark"
+                >
+                  <Store className="h-5 w-5" />
+                  Order Pickup
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+                <Link
+                  href="/menu?mode=delivery"
+                  className="inline-flex items-center gap-2.5 rounded-full border-2 border-saffron/70 bg-char/70 px-7 py-4 font-display text-xl font-bold uppercase tracking-wide text-saffron backdrop-blur-xs transition hover:bg-saffron hover:text-char"
+                >
+                  <Truck className="h-5 w-5" />
+                  Order Delivery
+                </Link>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-3 text-xs sm:text-sm text-cream/75">
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-saffron" /> 100% Halal Certified
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4 text-saffron" /> Open Fri–Sat till 2am
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4 text-saffron" /> 148 King St, Newtown
+                </span>
+              </div>
             </div>
 
-            <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl font-extrabold uppercase leading-[0.95] tracking-tight text-cream drop-shadow-lg">
-              CARVED OFF THE{' '}
-              <span className="text-saffron">CHARCOAL</span> SPIT
-            </h1>
-
-            <p className="max-w-xl text-base sm:text-lg leading-relaxed text-cream/85">
-              Hand-stacked lamb &amp; chicken doner roasted slow over live Australian ironbark,
-              loaded Halal Snack Packs dripping in garlic toum, and blistered stone-baked Turkish
-              pide.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link
-                href="/menu"
-                className="inline-flex items-center gap-2.5 rounded-full bg-ember px-7 py-4 font-display text-xl font-bold uppercase tracking-wide text-cream shadow-xl shadow-ember/30 transition hover:bg-ember-dark"
-              >
-                <Store className="h-5 w-5" />
-                Order Pickup
-                <ArrowRight className="h-5 w-5" />
-              </Link>
-              <Link
-                href="/menu?mode=delivery"
-                className="inline-flex items-center gap-2.5 rounded-full border-2 border-saffron/70 bg-char/70 px-7 py-4 font-display text-xl font-bold uppercase tracking-wide text-saffron backdrop-blur-xs transition hover:bg-saffron hover:text-char"
-              >
-                <Truck className="h-5 w-5" />
-                Order Delivery
-              </Link>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-3 text-xs sm:text-sm text-cream/75">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="h-4 w-4 text-saffron" /> 100% Halal Certified
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-saffron" /> Open Fri–Sat till 2am
-              </span>
-              <span className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4 text-saffron" /> 148 King St, Newtown
-              </span>
+            {/* Subtle Slowly Floating Hero Visual Showcase */}
+            <div className="lg:col-span-5">
+              <div className="hero-card-float relative mx-auto max-w-md lg:max-w-none">
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-saffron/35 bg-char-soft shadow-2xl shadow-black/60">
+                  <Image
+                    src={ctx.store.heroImageUrl || '/images/hero-grill.jpg'}
+                    alt="Star Kebab signature charcoal grill spread"
+                    fill
+                    priority
+                    className="object-cover object-center"
+                    sizes="(max-width: 1024px) 100vw, 42vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-char/70 via-transparent to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-2 rounded-2xl border border-cream/15 bg-char/80 px-4 py-2.5 backdrop-blur-md">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-saffron">
+                        Fresh Off The Spit
+                      </p>
+                      <p className="font-display text-lg font-extrabold uppercase tracking-wide text-cream leading-tight">
+                        Carved To Order Daily
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-ember px-3 py-1 font-mono text-xs font-bold text-cream">
+                      100% Halal
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
