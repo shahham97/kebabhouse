@@ -3,16 +3,34 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Flame, ShieldCheck, Clock, Award, ArrowRight } from 'lucide-react';
 import { getStorefrontContext } from '@/modules/storefront/queries';
+import { buildBreadcrumbJsonLd } from '@/lib/seo';
 
 export const metadata = {
-  title: 'Our Story',
+  title: 'About Star Kebab House — 100% Halal Turkish Charcoal Grill & Pide',
+  description:
+    'Learn the story behind Star Kebab House: 100% Halal-certified meats cooked over live charcoal, 24-hour fermented Turkish pide dough, handmade gozleme, and house-made dips & sauces prepared fresh daily.',
+  alternates: { canonical: '/about' },
+  openGraph: {
+    title: 'About Star Kebab House — 100% Halal Turkish Charcoal Grill',
+    description:
+      'Hand-marinated 100% Halal meats, stone-baked Turkish pide, and fresh sauces made daily.',
+    url: '/about',
+  },
 };
 
 export default async function AboutPage() {
   const ctx = await getStorefrontContext();
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'About Us', path: '/about' },
+  ]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 space-y-14">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <section className="grid grid-cols-1 gap-10 lg:grid-cols-2 items-center">
         <div className="space-y-5">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-ember/10 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-ember">

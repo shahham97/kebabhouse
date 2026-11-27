@@ -2,21 +2,27 @@ import React from 'react';
 import { AlertTriangle, Flame } from 'lucide-react';
 import { getPublicMenu, getStorefrontContext } from '@/modules/storefront/queries';
 import { MenuBrowser } from '@/components/storefront/MenuBrowser';
-import { buildMenuJsonLd } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, buildMenuJsonLd } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Menu — 100% Halal Charcoal Kebabs, HSP & Wood-Fired Pide',
+  title: 'Full Menu — 100% Halal Kebabs, HSP, Turkish Pide, Gourmet Pizza & Skewers',
   description:
-    'Explore Star Kebab House’s full 100% Halal menu: charcoal lamb & chicken kebabs, loaded Holy Trinity Halal Snack Packs (HSP), stone-baked Turkish pide, mixed grill plates, sides & cold drinks. Order online in AUD.',
+    'Explore Star Kebab House’s full 100% Halal menu: Kebab Rolls, Regular & Large Halal Snack Packs (HSP), 14 Turkish Pides, 30+ Gourmet Pizzas, Gozleme, Charcoal Skewers, Burgers, Banquets, Dips & Baklava. Order online in AUD.',
   alternates: { canonical: '/menu' },
+  openGraph: {
+    title: 'Star Kebab House Full Menu — 100% Halal Kebabs, HSP, Pide & Pizza',
+    description:
+      '119 authentic Turkish & charcoal grill dishes across 15 categories. Order online for fast pickup or local delivery.',
+    url: '/menu',
+  },
 };
 
 export default async function MenuPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; q?: string }>;
 }) {
   const [params, ctx, categories] = await Promise.all([
     searchParams,
@@ -25,9 +31,17 @@ export default async function MenuPage({
   ]);
 
   const menuJsonLd = buildMenuJsonLd(categories);
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Menu', path: '/menu' },
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(menuJsonLd) }}
@@ -63,7 +77,11 @@ export default async function MenuPage({
         </div>
       )}
 
-      <MenuBrowser categories={categories} initialCategorySlug={params.category} />
+      <MenuBrowser
+        categories={categories}
+        initialCategorySlug={params.category}
+        initialQuery={params.q}
+      />
     </div>
   );
 }

@@ -14,11 +14,12 @@ type FilterChip = 'ALL' | 'HALAL' | 'VEG' | 'SPICY' | 'BEST_SELLERS';
 interface MenuBrowserProps {
   categories: PublicMenuCategory[];
   initialCategorySlug?: string;
+  initialQuery?: string;
 }
 
-export function MenuBrowser({ categories, initialCategorySlug }: MenuBrowserProps) {
+export function MenuBrowser({ categories, initialCategorySlug, initialQuery }: MenuBrowserProps) {
   const [activeCategory, setActiveCategory] = useState<string>(initialCategorySlug || 'ALL');
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialQuery || '');
   const [filter, setFilter] = useState<FilterChip>('ALL');
   const [selectedProduct, setSelectedProduct] = useState<PublicProduct | null>(null);
 

@@ -3,20 +3,37 @@ import Link from 'next/link';
 import { MapPin, Phone, Mail, Clock, Truck, ArrowRight } from 'lucide-react';
 import { formatAUD } from '@/lib/money';
 import { getStorefrontContext } from '@/modules/storefront/queries';
+import { buildBreadcrumbJsonLd } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Contact & Location',
+  title: 'Contact, Opening Hours & Delivery Zones',
+  description:
+    'Find Star Kebab House’s phone number, address, opening hours, catering email, and local delivery postcodes. Order 100% Halal kebabs, HSP, pide & pizza online.',
+  alternates: { canonical: '/contact' },
+  openGraph: {
+    title: 'Contact Star Kebab House — Hours, Location & Delivery',
+    description: 'Shop details, opening hours, phone, catering enquiries, and delivery zones.',
+    url: '/contact',
+  },
 };
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export default async function ContactPage() {
   const ctx = await getStorefrontContext();
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Contact', path: '/contact' },
+  ]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 space-y-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <div className="max-w-2xl space-y-2">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-ember">Get In Touch</p>
         <h1 className="font-display text-5xl sm:text-6xl font-extrabold uppercase tracking-wide text-char leading-none">

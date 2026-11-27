@@ -22,9 +22,13 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       { userAgent: '*', allow: '/', disallow: disallowed },
+      { userAgent: 'Googlebot', allow: '/', disallow: disallowed },
+      { userAgent: 'Google-Extended', allow: '/', disallow: disallowed },
       { userAgent: 'OAI-SearchBot', allow: '/', disallow: disallowed },
+      { userAgent: 'GPTBot', allow: '/', disallow: disallowed },
       { userAgent: 'PerplexityBot', allow: '/', disallow: disallowed },
       { userAgent: 'ClaudeBot', allow: '/', disallow: disallowed },
+      { userAgent: 'Applebot-Extended', allow: '/', disallow: disallowed },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,

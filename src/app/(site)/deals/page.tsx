@@ -4,18 +4,35 @@ import Image from 'next/image';
 import { Tag, Flame, ArrowRight, Ticket } from 'lucide-react';
 import { formatAUD } from '@/lib/money';
 import { getActiveCoupons, getActiveDeals } from '@/modules/storefront/queries';
+import { buildBreadcrumbJsonLd } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Deals & Coupons',
+  title: 'Deals, Combos & Promo Codes — Save on Kebabs, HSP & Pizzas',
+  description:
+    'Save on 100% Halal kebab combos, family banquets, Halal Snack Packs, Turkish pides, and gourmet pizzas with active Star Kebab House deals and promo codes.',
+  alternates: { canonical: '/deals' },
+  openGraph: {
+    title: 'Star Kebab House Deals & Promo Codes',
+    description: 'Exclusive online combos, group banquets, and instant promo codes at checkout.',
+    url: '/deals',
+  },
 };
 
 export default async function DealsPage() {
   const [deals, coupons] = await Promise.all([getActiveDeals(), getActiveCoupons()]);
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Deals & Coupons', path: '/deals' },
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-14 space-y-14">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       {/* Header */}
       <div className="rounded-3xl bg-char px-6 py-10 sm:px-10 text-cream relative overflow-hidden">
         <div className="absolute -right-12 -top-12 h-56 w-56 rounded-full bg-saffron/15 blur-3xl" />

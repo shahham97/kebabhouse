@@ -22,7 +22,12 @@ import {
 } from '@/modules/storefront/queries';
 import { BestSellerGrid } from '@/components/storefront/MenuBrowser';
 import { RevealOnScroll, FaqAccordion } from '@/components/storefront/MotionPrimitives';
-import { buildFaqJsonLd, buildRestaurantJsonLd, STAR_KEBAB_FAQS } from '@/lib/seo';
+import {
+  buildFaqJsonLd,
+  buildRestaurantJsonLd,
+  buildWebSiteJsonLd,
+  STAR_KEBAB_FAQS,
+} from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,6 +68,7 @@ export default async function HomePage() {
   ]);
 
   const featuredCategories = menuCategories.slice(0, 4);
+  const websiteJsonLd = buildWebSiteJsonLd();
   const restaurantJsonLd = buildRestaurantJsonLd(ctx.store, ctx.openingHours);
   const faqJsonLd = buildFaqJsonLd();
 
@@ -98,6 +104,10 @@ export default async function HomePage() {
   return (
     <div className="bg-cream text-char">
       {/* JSON-LD Structured Data for Google Search & AI Overviews */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd) }}

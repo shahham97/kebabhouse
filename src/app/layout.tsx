@@ -27,25 +27,42 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Star Kebab House — Best 100% Halal Charcoal Kebabs, HSP & Wood-Fired Pide in Sydney',
+    default: 'Star Kebab House — 100% Halal Charcoal Kebabs, HSP, Turkish Pide & Gourmet Pizza',
     template: '%s | Star Kebab House',
   },
   description:
-    'Order Sydney’s favourite 100% Halal charcoal-grilled lamb & chicken kebabs, loaded Holy Trinity Halal Snack Packs (HSP), stone-baked Turkish pide, and mixed grill plates from Star Kebab House Newtown. Fast pickup, local delivery & open late Fri–Sat till 2am.',
+    'Order authentic 100% Halal charcoal-grilled kebabs, Halal Snack Packs (HSP), stone-baked Turkish pide, gourmet pizzas, handmade gozleme, charcoal skewers, banquets & baklava from Star Kebab House. Fast pickup & delivery online.',
   keywords: [
-    'Star Kebab',
     'Star Kebab House',
-    'best kebab Sydney',
-    'halal kebab Newtown',
-    'Halal Snack Pack Sydney',
+    'Star Kebab',
+    '100% halal kebab',
+    'best charcoal kebab Australia',
+    'Halal Snack Pack',
     'HSP near me',
-    'late night kebab Sydney',
-    'Turkish pide Newtown',
-    'charcoal kebab delivery Inner West',
-    '100% halal takeaway Sydney',
+    'Turkish pide',
+    'gourmet halal pizza',
+    'handmade gozleme',
+    'charcoal lamb skewers',
+    'Turkish restaurant takeaway',
+    'halal pizza and grill',
+    'Turkish banquet catering',
+    'fresh baklava',
+    'late night kebab delivery',
   ],
+  authors: [{ name: 'Star Kebab House', url: SITE_URL }],
+  creator: 'Star Kebab House',
+  publisher: 'Star Kebab House',
+  category: 'food',
+  formatDetection: {
+    telephone: true,
+    email: true,
+    address: true,
+  },
   alternates: {
     canonical: '/',
+    languages: {
+      'en-AU': '/',
+    },
   },
   icons: {
     icon: [
@@ -60,24 +77,30 @@ export const metadata: Metadata = {
     locale: 'en_AU',
     url: SITE_URL,
     siteName: 'Star Kebab House',
-    title: 'Star Kebab House — 100% Halal Charcoal Kebabs, HSP & Wood-Fired Pide',
+    title: 'Star Kebab House — 100% Halal Charcoal Kebabs, HSP, Turkish Pide & Gourmet Pizza',
     description:
-      'Carved fresh off live Australian ironbark charcoal. Order kebabs, Holy Trinity HSP & Turkish pide online for pickup or delivery across Newtown & Inner West Sydney.',
+      'Authentic Turkish charcoal kebabs, loaded Halal Snack Packs, stone-baked pide, gourmet pizzas, gozleme & baklava. Order online for fast pickup or delivery.',
     images: [
+      {
+        url: '/images/hero-kebab-steak-bg.jpg',
+        width: 1200,
+        height: 675,
+        alt: 'Star Kebab House charcoal kebab skewers and seared steak grill',
+      },
       {
         url: '/images/hero-grill.jpg',
         width: 1200,
         height: 630,
-        alt: 'Star Kebab House charcoal lamb and chicken kebab feast',
+        alt: 'Star Kebab House signature charcoal kebab and grill feast',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Star Kebab House — Charcoal Kebabs, HSP & Pide (Newtown, Sydney)',
+    title: 'Star Kebab House — 100% Halal Kebabs, HSP, Turkish Pide & Pizza',
     description:
-      '100% Halal ironbark charcoal kebabs, loaded HSP & wood-fired pide. Open late Fri–Sat till 2am.',
-    images: ['/images/hero-grill.jpg'],
+      'Charcoal-grilled lamb & chicken kebabs, Halal Snack Packs, wood-fired pide, gourmet pizzas & gozleme. Order online.',
+    images: ['/images/hero-kebab-steak-bg.jpg'],
   },
   robots: {
     index: true,
