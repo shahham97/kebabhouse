@@ -1,0 +1,900 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 7,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warning",
+        "message": "Detected 2 matching img entries with the same source/start/duration.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "D:\\kababshop\\aus_kebab\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation."
+      },
+      {
+        "code": "composition_file_too_large",
+        "severity": "warning",
+        "message": "This HTML composition file has 461 lines. Smaller sub-compositions are easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "D:\\kababshop\\aus_kebab\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Split coherent scenes or layers into separate .html files under compositions/, then mount them from the parent with data-composition-src so each file stays small enough to inspect, revise, and validate independently."
+      },
+      {
+        "code": "timeline_track_too_dense",
+        "severity": "warning",
+        "message": "This HTML file has 4 timed elements. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "D:\\kababshop\\aus_kebab\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move coherent scene groups into separate .html files under compositions/ and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"scene-1\"> is a timeline element that contains nested <img id=\"s1-bg\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#scene-1",
+        "dataAttributes": {},
+        "sourceFile": "D:\\kababshop\\aus_kebab\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"scene-1\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"scene-2\"> is a timeline element that contains nested <header>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#scene-2",
+        "dataAttributes": {},
+        "sourceFile": "D:\\kababshop\\aus_kebab\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"scene-2\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"scene-3\"> is a timeline element that contains nested <header>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#scene-3",
+        "dataAttributes": {},
+        "sourceFile": "D:\\kababshop\\aus_kebab\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"scene-3\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"scene-4\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#scene-4",
+        "dataAttributes": {},
+        "sourceFile": "D:\\kababshop\\aus_kebab\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"scene-4\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 4,
+    "findings": [
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 11,
+        "selector": "#kds-lane-1 > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 452.78,
+          "top": 854,
+          "right": 557.2,
+          "bottom": 892,
+          "width": 104.42,
+          "height": 38
+        },
+        "containerSelector": "#kds-lane-1 > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2)",
+        "text": "QUEUED",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 452.78,
+          "y": 854,
+          "width": 104.42,
+          "height": 38
+        },
+        "firstSeen": 11,
+        "lastSeen": 11,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          11
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 11,
+        "selector": "#kds-lane-2 > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1362.78,
+          "top": 854,
+          "right": 1467.2,
+          "bottom": 892,
+          "width": 104.42,
+          "height": 38
+        },
+        "containerSelector": "#kds-lane-2 > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2)",
+        "text": "QUEUED",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1362.78,
+          "y": 854,
+          "width": 104.42,
+          "height": 38
+        },
+        "firstSeen": 11,
+        "lastSeen": 11,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          11
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 13.25,
+        "selector": "#kds-lane-1 > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 361.7,
+          "top": 854,
+          "right": 648.3,
+          "bottom": 892,
+          "width": 286.6,
+          "height": 38
+        },
+        "containerSelector": "#kds-lane-1 > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > span:nth-of-type(1)",
+        "text": "PREPARING ON GRILL",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 361.7,
+          "y": 854,
+          "width": 286.6,
+          "height": 38
+        },
+        "firstSeen": 13.25,
+        "lastSeen": 13.25,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          13.25
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 13.25,
+        "selector": "#kds-lane-2 > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1310.88,
+          "top": 854,
+          "right": 1519.11,
+          "bottom": 892,
+          "width": 208.23,
+          "height": 38
+        },
+        "containerSelector": "#kds-lane-2 > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > span:nth-of-type(1)",
+        "text": "IN STONE OVEN",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1310.88,
+          "y": 854,
+          "width": 208.23,
+          "height": 38
+        },
+        "firstSeen": 13.25,
+        "lastSeen": 13.25,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          13.25
+        ]
+      }
+    ],
+    "duration": 20,
+    "samples": [
+      1.111,
+      3.333,
+      5.556,
+      7.778,
+      10,
+      12.222,
+      14.444,
+      16.667,
+      18.889
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 4,
+    "truncated": false,
+    "faceCheck": {
+      "ran": true,
+      "candidates": 0,
+      "faces": 0
+    }
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      1.111,
+      5.556,
+      10,
+      14.444,
+      18.889
+    ],
+    "checked": 94,
+    "passed": 94
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 66 text elements stay under it for 0.5 s or more, the smallest \"KEBAB STATION\" at 14 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "KEBAB STATION",
+        "selector": "#card-1 > div:nth-of-type(1) > div:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 87,
+          "y": 534.46,
+          "width": 123.77,
+          "height": 18
+        },
+        "time": 4,
+        "times": [
+          0.25,
+          0.625,
+          0.625,
+          0.75,
+          3.75,
+          3.75,
+          3.75,
+          3.75,
+          3.75,
+          3.75,
+          4,
+          4,
+          4,
+          4,
+          4.375,
+          4.375,
+          4.375,
+          4.375,
+          4.75,
+          4.75,
+          4.75,
+          4.75,
+          5.5,
+          5.5,
+          5.5,
+          5.5,
+          5.5,
+          5.5,
+          5.5,
+          5.5,
+          5.5,
+          7,
+          7,
+          9,
+          9.25,
+          9.25,
+          9.25,
+          9.25,
+          9.25,
+          9.25,
+          9.25,
+          9.25,
+          9.625,
+          9.625,
+          9.625,
+          9.625,
+          9.625,
+          13.25,
+          14.875,
+          14.875,
+          14.875,
+          14.875,
+          14.875,
+          14.875,
+          14.875,
+          14.875,
+          14.875,
+          15.125,
+          15.125,
+          15.125,
+          15.125,
+          15.125,
+          15.125,
+          15.125,
+          18,
+          18.25
+        ],
+        "fontPx": 14,
+        "floorPx": 28,
+        "seconds": 4.875,
+        "elements": [
+          {
+            "selector": "#card-1 > div:nth-of-type(1) > div:nth-of-type(1)",
+            "text": "KEBAB STATION",
+            "fontPx": 14,
+            "time": 4,
+            "seconds": 4.875
+          },
+          {
+            "selector": "#card-2 > div:nth-of-type(1) > div:nth-of-type(1)",
+            "text": "HSP BOXES",
+            "fontPx": 14,
+            "time": 4.375,
+            "seconds": 4.5
+          },
+          {
+            "selector": "#card-3 > div:nth-of-type(1) > div:nth-of-type(1)",
+            "text": "PIZZA & PIDE OVEN",
+            "fontPx": 14,
+            "time": 4.75,
+            "seconds": 4.125
+          },
+          {
+            "selector": "div.s1-preview-badge",
+            "text": "IN STOCK",
+            "fontPx": 14.79,
+            "time": 0.625,
+            "seconds": 3
+          },
+          {
+            "selector": "div.drawer-badge",
+            "text": "LIVE BILLING",
+            "fontPx": 15,
+            "time": 5.5,
+            "seconds": 3.375
+          },
+          {
+            "selector": "div.variant-label",
+            "text": "SWITCH VARIANT IN BASKET",
+            "fontPx": 15,
+            "time": 5.5,
+            "seconds": 3.375
+          },
+          {
+            "selector": "div.s1-preview-kicker",
+            "text": "FRESH OFF THE SPIT",
+            "fontPx": 15.78,
+            "time": 0.625,
+            "seconds": 3
+          },
+          {
+            "selector": "#qa-btn-1",
+            "text": "+ Quick Add",
+            "fontPx": 15.95,
+            "time": 4,
+            "seconds": 4.875
+          },
+          {
+            "selector": "#var-reg > span:nth-of-type(2)",
+            "text": "$14.50",
+            "fontPx": 16,
+            "time": 5.5,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#var-lrg > span:nth-of-type(2)",
+            "text": "$18.50",
+            "fontPx": 16,
+            "time": 5.5,
+            "seconds": 3.375
+          },
+          {
+            "selector": "div.s2-kicker",
+            "text": "LIVE INGREDIENT STOCK · INSTANT QUICK ADD",
+            "fontPx": 17,
+            "time": 3.75,
+            "seconds": 5.125
+          },
+          {
+            "selector": "#card-1 > div:nth-of-type(1) > div:nth-of-type(3)",
+            "text": "Ironbark-roasted lamb carved to order with crisp salad and house garlic sauce.",
+            "fontPx": 17,
+            "time": 4,
+            "seconds": 4.875
+          },
+          {
+            "selector": "#card-2 > div:nth-of-type(1) > div:nth-of-type(3)",
+            "text": "Golden chips layered with melted cheese, charcoal meat, garlic, BBQ and chilli.",
+            "fontPx": 17,
+            "time": 4.375,
+            "seconds": 4.5
+          },
+          {
+            "selector": "#card-2 > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+            "text": "+ Quick Add",
+            "fontPx": 17,
+            "time": 4.375,
+            "seconds": 4.5
+          },
+          {
+            "selector": "#card-3 > div:nth-of-type(1) > div:nth-of-type(3)",
+            "text": "Hand-stretched stone-baked Turkish flatbread finished with sumac onions.",
+            "fontPx": 17,
+            "time": 4.75,
+            "seconds": 4.125
+          },
+          {
+            "selector": "#card-3 > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+            "text": "+ Quick Add",
+            "fontPx": 17,
+            "time": 4.75,
+            "seconds": 4.125
+          },
+          {
+            "selector": "div.kds-station-pill.pill-ember",
+            "text": "STATION 01",
+            "fontPx": 17,
+            "time": 9.25,
+            "seconds": 5.375
+          },
+          {
+            "selector": "#kds-lane-1 > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+            "text": "Large Jumbo · Garlic & Chilli",
+            "fontPx": 17,
+            "time": 9.25,
+            "seconds": 5.375
+          },
+          {
+            "selector": "#kds-lane-1 > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2)",
+            "text": "Regular · Mixed Charcoal Meat",
+            "fontPx": 17,
+            "time": 9.25,
+            "seconds": 5.375
+          },
+          {
+            "selector": "div.kds-station-pill.pill-saffron",
+            "text": "STATION 02",
+            "fontPx": 17,
+            "time": 9.625,
+            "seconds": 5
+          },
+          {
+            "selector": "#kds-lane-2 > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+            "text": "Stone-Baked · Fresh Sumac Onions",
+            "fontPx": 17,
+            "time": 9.625,
+            "seconds": 5
+          },
+          {
+            "selector": "div.tracker-steps > div:nth-of-type(1) > div:nth-of-type(3)",
+            "text": "DONE",
+            "fontPx": 17,
+            "time": 14.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "div.tracker-steps > div:nth-of-type(2) > div:nth-of-type(3)",
+            "text": "DONE",
+            "fontPx": 17,
+            "time": 14.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "div.tracker-steps > div:nth-of-type(3) > div:nth-of-type(3)",
+            "text": "DONE",
+            "fontPx": 17,
+            "time": 14.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#step-complete > div:nth-of-type(3)",
+            "text": "SERVED",
+            "fontPx": 17,
+            "time": 14.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "div.s1-meta-tag",
+            "text": "DINE-IN · PICKUP · LIVE KDS",
+            "fontPx": 18,
+            "time": 0.75,
+            "seconds": 2.875
+          },
+          {
+            "selector": "#var-reg > span:nth-of-type(1)",
+            "text": "Regular",
+            "fontPx": 18,
+            "time": 5.5,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#var-lrg > span:nth-of-type(1)",
+            "text": "Large Jumbo",
+            "fontPx": 18,
+            "time": 5.5,
+            "seconds": 3.375
+          },
+          {
+            "selector": "div.tracker-kicker",
+            "text": "CUSTOMER STATUS · ORDER #SK-0042",
+            "fontPx": 18,
+            "time": 14.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#s1-eyebrow > span:nth-of-type(1)",
+            "text": "100% HALAL · IRONBARK CHARCOAL · NEWTOWN",
+            "fontPx": 19,
+            "time": 0.25,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#s2-bag",
+            "text": "YOUR ORDER · 1 ITEM",
+            "fontPx": 19,
+            "time": 3.75,
+            "seconds": 5.125
+          },
+          {
+            "selector": "span.active",
+            "text": "Menu",
+            "fontPx": 20,
+            "time": 3.75,
+            "seconds": 5.125
+          },
+          {
+            "selector": "div.s2-nav-pills > span:nth-of-type(2)",
+            "text": "Track Order",
+            "fontPx": 20,
+            "time": 3.75,
+            "seconds": 5.125
+          },
+          {
+            "selector": "div.s2-nav-pills > span:nth-of-type(3)",
+            "text": "King St, Newtown",
+            "fontPx": 20,
+            "time": 3.75,
+            "seconds": 5.125
+          },
+          {
+            "selector": "div.s2-subtitle",
+            "text": "Switch variants directly in your basket",
+            "fontPx": 20,
+            "time": 3.75,
+            "seconds": 5.125
+          },
+          {
+            "selector": "div.drawer-summary > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "GST (10% inc.)",
+            "fontPx": 20,
+            "time": 5.5,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#gst-reg",
+            "text": "$1.32",
+            "fontPx": 20,
+            "time": 5.5,
+            "seconds": 1.375
+          },
+          {
+            "selector": "#gst-lrg",
+            "text": "$1.68",
+            "fontPx": 20,
+            "time": 7,
+            "seconds": 1.875
+          },
+          {
+            "selector": "#lockup-stack",
+            "text": "Storefront · Till POS · Kitchen KDS · Admin",
+            "fontPx": 20,
+            "time": 18.25,
+            "seconds": 1.75
+          },
+          {
+            "selector": "div.till-lines > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "1x Signature Charcoal Kebab (Large)",
+            "fontPx": 21,
+            "time": 15.125,
+            "seconds": 2.5
+          },
+          {
+            "selector": "div.till-lines > div:nth-of-type(1) > strong:nth-of-type(1)",
+            "text": "$18.50",
+            "fontPx": 21,
+            "time": 15.125,
+            "seconds": 2.5
+          },
+          {
+            "selector": "div.till-lines > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "1x Holy Trinity Halal Snack Pack",
+            "fontPx": 21,
+            "time": 15.125,
+            "seconds": 2.5
+          },
+          {
+            "selector": "div.till-lines > div:nth-of-type(2) > strong:nth-of-type(1)",
+            "text": "$16.50",
+            "fontPx": 21,
+            "time": 15.125,
+            "seconds": 2.5
+          },
+          {
+            "selector": "div.till-lines > div:nth-of-type(3) > span:nth-of-type(1)",
+            "text": "1x Spiced Lamb & Mozzarella Pide",
+            "fontPx": 21,
+            "time": 15.125,
+            "seconds": 2.5
+          },
+          {
+            "selector": "div.till-lines > div:nth-of-type(3) > strong:nth-of-type(1)",
+            "text": "$17.00",
+            "fontPx": 21,
+            "time": 15.125,
+            "seconds": 2.5
+          },
+          {
+            "selector": "div.s3-order-chip",
+            "text": "ORDER #SK-0042 · DINE-IN · TABLE 5",
+            "fontPx": 22,
+            "time": 9,
+            "seconds": 5.625
+          },
+          {
+            "selector": "#kds-lane-1 > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "TABLE 5 · 01:42",
+            "fontPx": 22,
+            "time": 9.25,
+            "seconds": 5.375
+          },
+          {
+            "selector": "#kds-lane-2 > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "TABLE 5 · 01:42",
+            "fontPx": 22,
+            "time": 9.625,
+            "seconds": 5
+          },
+          {
+            "selector": "div.till-order-no",
+            "text": "#SK-0042",
+            "fontPx": 22,
+            "time": 15.125,
+            "seconds": 2.5
+          },
+          {
+            "selector": "#card-1 > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+            "text": "$14.50",
+            "fontPx": 24,
+            "time": 4,
+            "seconds": 4.875
+          },
+          {
+            "selector": "#card-2 > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+            "text": "$16.50",
+            "fontPx": 24,
+            "time": 4.375,
+            "seconds": 4.5
+          },
+          {
+            "selector": "#card-3 > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+            "text": "$17.00",
+            "fontPx": 24,
+            "time": 4.75,
+            "seconds": 4.125
+          },
+          {
+            "selector": "#kds-lane-1 > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1)",
+            "text": "Signature Charcoal Kebab",
+            "fontPx": 24,
+            "time": 9.25,
+            "seconds": 5.375
+          },
+          {
+            "selector": "#kds-lane-1 > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1)",
+            "text": "Holy Trinity Halal Snack Pack",
+            "fontPx": 24,
+            "time": 9.25,
+            "seconds": 5.375
+          },
+          {
+            "selector": "#kds-lane-2 > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1)",
+            "text": "Spiced Lamb & Mozzarella Pide",
+            "fontPx": 24,
+            "time": 9.625,
+            "seconds": 5
+          },
+          {
+            "selector": "#s3-ready-banner > span:nth-of-type(2)",
+            "text": "SYNCED LIVE",
+            "fontPx": 24,
+            "time": 13.25,
+            "seconds": 1.375
+          },
+          {
+            "selector": "div.tracker-steps > div:nth-of-type(1) > div:nth-of-type(2)",
+            "text": "Order Received",
+            "fontPx": 24,
+            "time": 14.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "div.tracker-steps > div:nth-of-type(2) > div:nth-of-type(2)",
+            "text": "Preparing on the Grill",
+            "fontPx": 24,
+            "time": 14.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "div.tracker-steps > div:nth-of-type(3) > div:nth-of-type(2)",
+            "text": "Ready at Counter",
+            "fontPx": 24,
+            "time": 14.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#step-complete > div:nth-of-type(2)",
+            "text": "Completed",
+            "fontPx": 24,
+            "time": 14.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#lockup-tagline",
+            "text": "CARVED OFF THE CHARCOAL SPIT",
+            "fontPx": 24,
+            "time": 18,
+            "seconds": 2
+          },
+          {
+            "selector": "#price-reg",
+            "text": "$14.50",
+            "fontPx": 26,
+            "time": 5.5,
+            "seconds": 1.375
+          },
+          {
+            "selector": "#price-lrg",
+            "text": "$18.50",
+            "fontPx": 26,
+            "time": 7,
+            "seconds": 1.875
+          },
+          {
+            "selector": "#kds-lane-1 > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "1x",
+            "fontPx": 26,
+            "time": 9.25,
+            "seconds": 5.375
+          },
+          {
+            "selector": "#kds-lane-1 > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "1x",
+            "fontPx": 26,
+            "time": 9.25,
+            "seconds": 5.375
+          },
+          {
+            "selector": "#kds-lane-2 > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "1x",
+            "fontPx": 26,
+            "time": 9.625,
+            "seconds": 5
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 160
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

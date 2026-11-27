@@ -1,0 +1,279 @@
+{
+  "version": 1,
+  "historyId": "1ec29e6e-f940-4230-8a8a-48ed473ed888",
+  "currentRevision": "7aa47d79-b13a-450c-a63d-4424c4f8fd6e",
+  "pendingChanges": false,
+  "files": {
+    "assets/images/grill-plate.jpg": {
+      "hash": "1091642f3ac93329f90a69b68bc7870c7ec4b55215ea72538e3f158a4cc5ce9f",
+      "content": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\10\\1091642f3ac93329f90a69b68bc7870c7ec4b55215ea72538e3f158a4cc5ce9f"
+    },
+    "assets/images/hero-grill.jpg": {
+      "hash": "d01c85bd3ffc9477fa2c533f2505f60cfc7058a40d6543f349b1d4743c829223",
+      "content": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\d0\\d01c85bd3ffc9477fa2c533f2505f60cfc7058a40d6543f349b1d4743c829223"
+    },
+    "assets/images/hsp-box.jpg": {
+      "hash": "8c7a587d61168dbb8a4849d36fdd5b5f6cebed9f533829a642edb01b47b023f7",
+      "content": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\8c\\8c7a587d61168dbb8a4849d36fdd5b5f6cebed9f533829a642edb01b47b023f7"
+    },
+    "assets/images/kebab-wrap.jpg": {
+      "hash": "c61546f00041c51d8009562709b5e534bc8a09353b53e7090220543b586967fe",
+      "content": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\c6\\c61546f00041c51d8009562709b5e534bc8a09353b53e7090220543b586967fe"
+    },
+    "assets/images/sides-chips.jpg": {
+      "hash": "2809179dddd10b1f75089f09f6d21f928d0a83b1982528c106e9793db64dde18",
+      "content": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\28\\2809179dddd10b1f75089f09f6d21f928d0a83b1982528c106e9793db64dde18"
+    },
+    "assets/images/turkish-pizza.jpg": {
+      "hash": "5683c32789afcd4267b080bb2eaeec0c007cc82c8ed516dd2b1bddd73a6b2d65",
+      "content": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\56\\5683c32789afcd4267b080bb2eaeec0c007cc82c8ed516dd2b1bddd73a6b2d65"
+    },
+    "assets/sfx/impact/impactBell_heavy_000.ogg": {
+      "hash": "94b8bb5f2d43ab65e4bcc32b28562416e9bc2c51d9fd4be1e333660ee52f977f",
+      "content": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\94\\94b8bb5f2d43ab65e4bcc32b28562416e9bc2c51d9fd4be1e333660ee52f977f"
+    },
+    "assets/sfx/impact/impactSoft_medium_001.ogg": {
+      "hash": "7642a4fd43e547afe4f7adfadb3dabb681c0ff512f52c1674bae30a726841faf",
+      "content": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\76\\7642a4fd43e547afe4f7adfadb3dabb681c0ff512f52c1674bae30a726841faf"
+    },
+    "assets/sfx/interface/bong_001.ogg": {
+      "hash": "d21d0f0b782445db579d11e2506b24cd1ac9d664ee33aeaf807761aa7b6fd710",
+      "content": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\d2\\d21d0f0b782445db579d11e2506b24cd1ac9d664ee33aeaf807761aa7b6fd710"
+    },
+    "assets/sfx/interface/click_003.ogg": {
+      "hash": "2fa929138bc3a0f432696588f66eac94b8f6d463905ec8808c6461ce4b054292",
+      "content": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\2f\\2fa929138bc3a0f432696588f66eac94b8f6d463905ec8808c6461ce4b054292"
+    },
+    "index.html": {
+      "hash": "d483d6c5a3d193350f3bd6300fdf1b38041d610bc78bcf70a457d5cfa16adf4d",
+      "content": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\d4\\d483d6c5a3d193350f3bd6300fdf1b38041d610bc78bcf70a457d5cfa16adf4d"
+    },
+    "assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3": {
+      "hash": "5888d4bd2ba0119b87a94e502ae2cc401c08192945cc5e5c2f8e8a33aa47a0a1",
+      "content": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\58\\5888d4bd2ba0119b87a94e502ae2cc401c08192945cc5e5c2f8e8a33aa47a0a1"
+    }
+  },
+  "revisions": {
+    "e4eb224e-7b9c-4150-a61f-b8f146a2a79c": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1795726544504,
+      "endedAt": 1795726544508,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\21\\21e2d7a8e9b1e15c82d0684ef2aef4ec25de27d737f9eb47f9058627e2f77590",
+          "after": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\23\\239980afeff6935c8f3e76f32237b2fff0fc11e5a523f30e12b4f79fce682ad5"
+        }
+      }
+    },
+    "409f80c9-1c0a-4c71-93a1-59cdeaeb2d43": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1795726608170,
+      "endedAt": 1795726608177,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\23\\239980afeff6935c8f3e76f32237b2fff0fc11e5a523f30e12b4f79fce682ad5",
+          "after": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\a6\\a6e4ba8b8bda18f40448baf9ad73e4e983ffb8ca80b2f40b0bbdb8c63eace238"
+        }
+      }
+    },
+    "7aa47d79-b13a-450c-a63d-4424c4f8fd6e": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1795726657535,
+      "endedAt": 1795726657542,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\a6\\a6e4ba8b8bda18f40448baf9ad73e4e983ffb8ca80b2f40b0bbdb8c63eace238",
+          "after": "C:\\Users\\Shaham\\.cache\\hyperframes\\history\\1ec29e6e-f940-4230-8a8a-48ed473ed888\\blobs\\d4\\d483d6c5a3d193350f3bd6300fdf1b38041d610bc78bcf70a457d5cfa16adf4d"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": "7aa47d79-b13a-450c-a63d-4424c4f8fd6e",
+      "id": "692e788a-61c4-48f5-9107-13dd10cf1040"
+    },
+    "revisions": {
+      "e4eb224e-7b9c-4150-a61f-b8f146a2a79c": [
+        {
+          "id": "bcb5b771-667d-4b84-8ef2-13cbb8e9f07a",
+          "scope": "project",
+          "metadata": {
+            "ok": false,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 45000,
+              "cache": true,
+              "contrast": true,
+              "craft": true,
+              "strict": false,
+              "snapshots": false,
+              "safeZones": [
+                "tiktok",
+                "reels",
+                "shorts"
+              ],
+              "browserGpuMode": "auto",
+              "includeUnmounted": false
+            }
+          },
+          "createdAt": 1795726554987,
+          "contentHash": "74c38353b55d718e0dd045767772031af0479bee92589ab7fe773968f8dc511b",
+          "revision": "e4eb224e-7b9c-4150-a61f-b8f146a2a79c",
+          "inputFingerprint": "48239bc4f54e7faec7ba046af03c34abad89a3c03baff3c5a4ad3fd402714c47",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "85bcb90e-bafb-4ef0-b4bc-6250b99f3bf0"
+        }
+      ],
+      "409f80c9-1c0a-4c71-93a1-59cdeaeb2d43": [
+        {
+          "id": "220063d2-3286-4d8c-bc6e-3c8946185a9c",
+          "scope": "project",
+          "metadata": {
+            "ok": false,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 45000,
+              "cache": true,
+              "contrast": true,
+              "craft": true,
+              "strict": false,
+              "snapshots": false,
+              "safeZones": [
+                "tiktok",
+                "reels",
+                "shorts"
+              ],
+              "browserGpuMode": "auto",
+              "includeUnmounted": false
+            }
+          },
+          "createdAt": 1795726620341,
+          "contentHash": "4e5e6a072ffbad50505ea3e24bacdcbf6bf7fae141d85ed73399a7f22a44f077",
+          "revision": "409f80c9-1c0a-4c71-93a1-59cdeaeb2d43",
+          "inputFingerprint": "71dd27ed3764aada0f50c73716234cd3c12c3b2dff2c8a7ccd850927ffa24d72",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "85bcb90e-bafb-4ef0-b4bc-6250b99f3bf0"
+        }
+      ],
+      "7aa47d79-b13a-450c-a63d-4424c4f8fd6e": [
+        {
+          "id": "692e788a-61c4-48f5-9107-13dd10cf1040",
+          "scope": "project",
+          "report": "D:\\kababshop\\aus_kebab\\brag-output\\composition\\.hyperframes\\artifacts\\checks\\692e788a-61c4-48f5-9107-13dd10cf1040.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 45000,
+              "cache": true,
+              "contrast": true,
+              "craft": true,
+              "strict": false,
+              "snapshots": false,
+              "safeZones": [
+                "tiktok",
+                "reels",
+                "shorts"
+              ],
+              "browserGpuMode": "auto",
+              "includeUnmounted": false
+            }
+          },
+          "createdAt": 1795726669713,
+          "contentHash": "7477b4e58ccd318c60aaf9217e05f5e2482124f7af7d8becfdfbbbff163ef38a",
+          "revision": "7aa47d79-b13a-450c-a63d-4424c4f8fd6e",
+          "inputFingerprint": "22a9484644852fb57a0c7e4f45360ac8f93705ba2d0051c2a4d9dc7d5b653d43",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": [
+      {
+        "id": "ca02be01-d494-4537-bd91-30cda9ea0c59",
+        "scope": "project",
+        "report": "D:\\kababshop\\aus_kebab\\brag-output\\composition\\.hyperframes\\artifacts\\checks\\ca02be01-d494-4537-bd91-30cda9ea0c59.json",
+        "metadata": {
+          "ok": false,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 45000,
+            "cache": true,
+            "contrast": true,
+            "craft": true,
+            "strict": false,
+            "snapshots": false,
+            "safeZones": [
+              "tiktok",
+              "reels",
+              "shorts"
+            ],
+            "browserGpuMode": "auto",
+            "includeUnmounted": false
+          }
+        },
+        "createdAt": 1795726499226,
+        "contentHash": "89f41543152cb2f70f8400af685f9cf75e4dcb35fa49df42a91d55a32a63bc5c",
+        "revision": null,
+        "inputFingerprint": "c1795e8b044e13e8b21c11459431db7415111a0d7975276c1ac14a666f175d6a",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "85bcb90e-bafb-4ef0-b4bc-6250b99f3bf0",
+      "completedAt": 1795726758296,
+      "output": "D:\\kababshop\\aus_kebab\\brag-output\\brag.mp4",
+      "status": "completed",
+      "revision": "7aa47d79-b13a-450c-a63d-4424c4f8fd6e"
+    },
+    "retainedRevisions": [
+      "7aa47d79-b13a-450c-a63d-4424c4f8fd6e"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}
