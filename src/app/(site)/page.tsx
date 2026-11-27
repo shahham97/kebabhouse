@@ -66,6 +66,35 @@ export default async function HomePage() {
   const restaurantJsonLd = buildRestaurantJsonLd(ctx.store, ctx.openingHours);
   const faqJsonLd = buildFaqJsonLd();
 
+  const heroFloatingCard = (
+    <div className="hero-card-float relative mx-auto max-w-md lg:max-w-none">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-saffron/35 bg-char-soft shadow-2xl shadow-black/60">
+        <Image
+          src={ctx.store.heroImageUrl || '/images/hero-grill.jpg'}
+          alt="Star Kebab signature charcoal grill spread"
+          fill
+          priority
+          className="object-cover object-center"
+          sizes="(max-width: 1024px) 100vw, 42vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-char/70 via-transparent to-transparent" />
+        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-2 rounded-2xl border border-cream/15 bg-char/80 px-4 py-2.5 backdrop-blur-md">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-saffron">
+              Fresh Off The Spit
+            </p>
+            <p className="font-display text-lg font-extrabold uppercase tracking-wide text-cream leading-tight">
+              Carved To Order Daily
+            </p>
+          </div>
+          <span className="rounded-full bg-ember px-3 py-1 font-mono text-xs font-bold text-cream">
+            100% Halal
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="bg-cream text-char">
       {/* JSON-LD Structured Data for Google Search & AI Overviews */}
@@ -100,6 +129,9 @@ export default async function HomePage() {
                 <Flame className="h-3.5 w-3.5 text-ember" />
                 100% Halal · Ironbark Charcoal · Newtown
               </div>
+
+              {/* Smaller screens: floating showcase card right below eyebrow */}
+              <div className="lg:hidden pt-1">{heroFloatingCard}</div>
 
               <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl font-extrabold uppercase leading-[0.95] tracking-tight text-cream drop-shadow-lg">
                 CARVED OFF THE{' '}
@@ -143,35 +175,8 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Subtle Slowly Floating Hero Visual Showcase */}
-            <div className="lg:col-span-5">
-              <div className="hero-card-float relative mx-auto max-w-md lg:max-w-none">
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-saffron/35 bg-char-soft shadow-2xl shadow-black/60">
-                  <Image
-                    src={ctx.store.heroImageUrl || '/images/hero-grill.jpg'}
-                    alt="Star Kebab signature charcoal grill spread"
-                    fill
-                    priority
-                    className="object-cover object-center"
-                    sizes="(max-width: 1024px) 100vw, 42vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-char/70 via-transparent to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-2 rounded-2xl border border-cream/15 bg-char/80 px-4 py-2.5 backdrop-blur-md">
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-saffron">
-                        Fresh Off The Spit
-                      </p>
-                      <p className="font-display text-lg font-extrabold uppercase tracking-wide text-cream leading-tight">
-                        Carved To Order Daily
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-ember px-3 py-1 font-mono text-xs font-bold text-cream">
-                      100% Halal
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Subtle Slowly Floating Hero Visual Showcase (desktop lg+) */}
+            <div className="hidden lg:block lg:col-span-5">{heroFloatingCard}</div>
           </div>
         </div>
       </section>
