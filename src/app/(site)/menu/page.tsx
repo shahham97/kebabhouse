@@ -2,11 +2,15 @@ import React from 'react';
 import { AlertTriangle, Flame } from 'lucide-react';
 import { getPublicMenu, getStorefrontContext } from '@/modules/storefront/queries';
 import { MenuBrowser } from '@/components/storefront/MenuBrowser';
+import { buildMenuJsonLd } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Menu — Charcoal Kebabs, HSP & Pide',
+  title: 'Menu — 100% Halal Charcoal Kebabs, HSP & Wood-Fired Pide',
+  description:
+    'Explore Star Kebab House’s full 100% Halal menu: charcoal lamb & chicken kebabs, loaded Holy Trinity Halal Snack Packs (HSP), stone-baked Turkish pide, mixed grill plates, sides & cold drinks. Order online in AUD.',
+  alternates: { canonical: '/menu' },
 };
 
 export default async function MenuPage({
@@ -20,8 +24,14 @@ export default async function MenuPage({
     getPublicMenu(),
   ]);
 
+  const menuJsonLd = buildMenuJsonLd(categories);
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(menuJsonLd) }}
+      />
       {/* Page Header */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>

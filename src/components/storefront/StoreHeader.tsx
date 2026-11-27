@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   Flame,
@@ -93,11 +94,18 @@ export function StoreHeader({
         <div className="mx-auto flex h-16 sm:h-18 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-char text-saffron shadow-md ring-1 ring-saffron/30 group-hover:bg-ember group-hover:text-cream transition">
-              <Flame className="h-5 w-5" />
+            <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-char shadow-md ring-1 ring-saffron/35 transition-transform duration-300 group-hover:scale-105">
+              <Image
+                src="/images/logo.webp"
+                alt={`${storeName} logo`}
+                fill
+                priority
+                sizes="44px"
+                className="object-contain p-0.5"
+              />
             </span>
             <div className="leading-none">
-              <span className="block font-display text-2xl font-extrabold uppercase tracking-wider text-char">
+              <span className="block font-display text-2xl font-extrabold uppercase tracking-wider text-char group-hover:text-ember transition-colors">
                 {storeName}
               </span>
               <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-smoke">

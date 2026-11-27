@@ -21,6 +21,8 @@ import {
   getStorefrontContext,
 } from '@/modules/storefront/queries';
 import { BestSellerGrid } from '@/components/storefront/MenuBrowser';
+import { RevealOnScroll, FaqAccordion } from '@/components/storefront/MotionPrimitives';
+import { buildFaqJsonLd, buildRestaurantJsonLd, STAR_KEBAB_FAQS } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,9 +49,21 @@ export default async function HomePage() {
   ]);
 
   const featuredCategories = menuCategories.slice(0, 4);
+  const restaurantJsonLd = buildRestaurantJsonLd(ctx.store, ctx.openingHours);
+  const faqJsonLd = buildFaqJsonLd();
 
   return (
     <div className="bg-cream text-char">
+      {/* JSON-LD Structured Data for Google Search & AI Overviews */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+
       {/* EDITORIAL HERO */}
       <section className="relative overflow-hidden bg-char text-cream">
         <div className="absolute inset-0 overflow-hidden">
@@ -87,7 +101,7 @@ export default async function HomePage() {
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Link
                   href="/menu"
-                  className="inline-flex items-center gap-2.5 rounded-full bg-ember px-7 py-4 font-display text-xl font-bold uppercase tracking-wide text-cream shadow-xl shadow-ember/30 transition hover:bg-ember-dark"
+                  className="btn-glow inline-flex items-center gap-2.5 rounded-full bg-ember px-7 py-4 font-display text-xl font-bold uppercase tracking-wide text-cream shadow-xl shadow-ember/30 hover:bg-ember-dark"
                 >
                   <Store className="h-5 w-5" />
                   Order Pickup
@@ -95,7 +109,7 @@ export default async function HomePage() {
                 </Link>
                 <Link
                   href="/menu?mode=delivery"
-                  className="inline-flex items-center gap-2.5 rounded-full border-2 border-saffron/70 bg-char/70 px-7 py-4 font-display text-xl font-bold uppercase tracking-wide text-saffron backdrop-blur-xs transition hover:bg-saffron hover:text-char"
+                  className="btn-glow inline-flex items-center gap-2.5 rounded-full border-2 border-saffron/70 bg-char/70 px-7 py-4 font-display text-xl font-bold uppercase tracking-wide text-saffron backdrop-blur-xs hover:bg-saffron hover:text-char"
                 >
                   <Truck className="h-5 w-5" />
                   Order Delivery
@@ -170,40 +184,39 @@ export default async function HomePage() {
             </div>
 
             <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory md:grid md:grid-cols-3 md:overflow-visible">
-              {deals.map((deal) => (
-                <div
-                  key={deal.id}
-                  className="min-w-[280px] snap-start flex flex-col overflow-hidden rounded-2xl border border-border-warm bg-white shadow-sm transition hover:shadow-lg"
-                >
-                  <div className="relative h-40 w-full bg-char">
-                    <Image
-                      src={deal.imageUrl || '/images/hsp-box.jpg'}
-                      alt={deal.name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 80vw, 33vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-char/80 via-transparent to-transparent" />
-                    <span className="absolute left-3 top-3 rounded-full bg-saffron px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-char shadow">
-                      {deal.badgeText}
-                    </span>
-                    <span className="absolute bottom-3 right-3 rounded-xl bg-char/90 px-3 py-1 font-mono text-lg font-extrabold text-saffron tabular-nums">
-                      {formatAUD(deal.priceCents)}
-                    </span>
+              {deals.map((deal, idx) => (
+                <RevealOnScroll key={deal.id} delayMs={idx * 90} className="min-w-[280px] snap-start flex">
+                  <div className="card-lift flex w-full flex-col overflow-hidden rounded-2xl border border-border-warm bg-white shadow-sm">
+                    <div className="relative h-40 w-full bg-char overflow-hidden group">
+                      <Image
+                        src={deal.imageUrl || '/images/hsp-box.jpg'}
+                        alt={deal.name}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 768px) 80vw, 33vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-char/80 via-transparent to-transparent" />
+                      <span className="deal-shimmer absolute left-3 top-3 rounded-full px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-char shadow">
+                        {deal.badgeText}
+                      </span>
+                      <span className="absolute bottom-3 right-3 rounded-xl bg-char/90 px-3 py-1 font-mono text-lg font-extrabold text-saffron tabular-nums">
+                        {formatAUD(deal.priceCents)}
+                      </span>
+                    </div>
+                    <div className="flex flex-1 flex-col p-4">
+                      <h3 className="font-display text-2xl font-bold uppercase tracking-wide text-char">
+                        {deal.name}
+                      </h3>
+                      <p className="mt-1 text-xs sm:text-sm text-smoke flex-1">{deal.description}</p>
+                      <Link
+                        href="/menu"
+                        className="btn-glow mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-char py-2.5 text-sm font-bold text-cream hover:bg-ember"
+                      >
+                        Order This Deal <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
                   </div>
-                  <div className="flex flex-1 flex-col p-4">
-                    <h3 className="font-display text-2xl font-bold uppercase tracking-wide text-char">
-                      {deal.name}
-                    </h3>
-                    <p className="mt-1 text-xs sm:text-sm text-smoke flex-1">{deal.description}</p>
-                    <Link
-                      href="/menu"
-                      className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-char py-2.5 text-sm font-bold text-cream hover:bg-ember transition"
-                    >
-                      Order This Deal <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                </div>
+                </RevealOnScroll>
               ))}
             </div>
           </div>
@@ -231,18 +244,18 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredCategories.map((cat) => {
+            {featuredCategories.map((cat, idx) => {
               const img =
                 cat.imageUrl ||
                 CATEGORY_FALLBACK_IMAGES[cat.slug] ||
                 cat.products[0]?.imageUrl ||
                 '/images/kebab-wrap.jpg';
               return (
-                <Link
-                  key={cat.id}
-                  href={`/menu?category=${cat.slug}`}
-                  className="group relative aspect-[4/5] overflow-hidden rounded-3xl bg-char shadow-md"
-                >
+                <RevealOnScroll key={cat.id} delayMs={idx * 80}>
+                  <Link
+                    href={`/menu?category=${cat.slug}`}
+                    className="card-lift group relative block aspect-[4/5] overflow-hidden rounded-3xl bg-char shadow-md"
+                  >
                   <Image
                     src={img}
                     alt={cat.name}
@@ -262,7 +275,8 @@ export default async function HomePage() {
                       Explore <ArrowRight className="h-3.5 w-3.5" />
                     </span>
                   </div>
-                </Link>
+                  </Link>
+                </RevealOnScroll>
               );
             })}
           </div>
@@ -460,7 +474,7 @@ export default async function HomePage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/menu"
-                className="inline-flex items-center gap-2 rounded-full bg-ember px-6 py-3 font-display text-lg font-bold uppercase tracking-wide text-cream hover:bg-ember-dark transition"
+                className="btn-glow inline-flex items-center gap-2 rounded-full bg-ember px-6 py-3 font-display text-lg font-bold uppercase tracking-wide text-cream hover:bg-ember-dark"
               >
                 Order Online Now <ArrowRight className="h-4 w-4" />
               </Link>
@@ -473,6 +487,24 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* AI OVERVIEW & LOCAL SEO FAQ SECTION */}
+      <section className="mx-auto max-w-4xl px-4 sm:px-6 pb-16 sm:pb-20">
+        <RevealOnScroll>
+          <div className="text-center mb-8 space-y-2">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-ember">
+              Good To Know
+            </p>
+            <h2 className="font-display text-3xl sm:text-5xl font-extrabold uppercase tracking-wide text-char">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-sm text-smoke max-w-xl mx-auto">
+              Halal certification, late-night Sydney trading hours, delivery zones, and pre-orders at Star Kebab House.
+            </p>
+          </div>
+          <FaqAccordion items={STAR_KEBAB_FAQS} />
+        </RevealOnScroll>
       </section>
     </div>
   );

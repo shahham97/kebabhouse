@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import { Flame, MapPin, Phone, Clock, ShieldCheck, Mail } from 'lucide-react';
+import Image from 'next/image';
+import { MapPin, Phone, Clock, ShieldCheck, Mail } from 'lucide-react';
 
 interface OpeningHourRow {
   dayOfWeek: number;
@@ -48,9 +49,15 @@ export function StoreFooter({ store, openingHours, footerNav }: StoreFooterProps
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand Story */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-ember text-cream shadow">
-                <Flame className="h-5 w-5" />
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-char-soft shadow-md ring-1 ring-saffron/35">
+                <Image
+                  src="/images/logo.webp"
+                  alt={`${store.name} logo`}
+                  fill
+                  sizes="48px"
+                  className="object-contain p-0.5"
+                />
               </span>
               <div>
                 <p className="font-display text-2xl font-extrabold uppercase tracking-wider text-cream leading-none">
