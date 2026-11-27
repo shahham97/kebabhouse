@@ -68,8 +68,8 @@ export default async function HomePage() {
       <section className="relative overflow-hidden bg-char text-cream">
         <div className="absolute inset-0 overflow-hidden">
           <Image
-            src={ctx.store.heroImageUrl || '/images/hero-grill.jpg'}
-            alt="Star Kebab live charcoal spit and grill"
+            src="/images/hero-kebab-steak-bg.jpg"
+            alt="Star Kebab charcoal kebab skewers and seared steak grill"
             fill
             priority
             className="hero-bg-float object-cover object-center opacity-55"
