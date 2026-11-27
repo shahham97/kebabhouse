@@ -49,25 +49,15 @@ export function StoreFooter({ store, openingHours, footerNav }: StoreFooterProps
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand Story */}
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-char-soft shadow-md ring-1 ring-saffron/35">
-                <Image
-                  src="/images/logo.webp"
-                  alt={`${store.name} logo`}
-                  fill
-                  sizes="48px"
-                  className="object-contain p-0.5"
-                />
-              </span>
-              <div>
-                <p className="font-display text-2xl font-extrabold uppercase tracking-wider text-cream leading-none">
-                  {store.name}
-                </p>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-saffron mt-0.5">
-                  Newtown · Sydney
-                </p>
-              </div>
-            </div>
+            <Link href="/" className="inline-block group" aria-label={store.name}>
+              <Image
+                src="/images/logo-transparent.png"
+                alt={`${store.name} logo`}
+                width={138}
+                height={90}
+                className="h-20 sm:h-24 w-auto object-contain drop-shadow-[0_2px_10px_rgba(255,255,255,0.14)] transition-transform duration-300 group-hover:scale-105"
+              />
+            </Link>
             <p className="text-sm leading-relaxed text-cream/75">
               Slow-roasted over live Australian ironbark charcoal, carved fresh to order and wrapped
               in blistered stone-baked bread with house-made garlic toum & chilli sauces.

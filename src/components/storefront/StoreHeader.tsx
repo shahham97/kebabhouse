@@ -91,27 +91,17 @@ export function StoreHeader({
 
       {/* Main Nav Bar */}
       <div className="border-b border-border-warm bg-cream/95 backdrop-blur-md">
-        <div className="mx-auto flex h-16 sm:h-18 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="mx-auto flex h-18 sm:h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
           {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-            <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-char shadow-md ring-1 ring-saffron/35 transition-transform duration-300 group-hover:scale-105">
-              <Image
-                src="/images/logo.webp"
-                alt={`${storeName} logo`}
-                fill
-                priority
-                sizes="44px"
-                className="object-contain p-0.5"
-              />
-            </span>
-            <div className="leading-none">
-              <span className="block font-display text-2xl font-extrabold uppercase tracking-wider text-char group-hover:text-ember transition-colors">
-                {storeName}
-              </span>
-              <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-smoke">
-                Charcoal Grill · 100% Halal
-              </span>
-            </div>
+          <Link href="/" className="flex items-center group shrink-0" aria-label={storeName}>
+            <Image
+              src="/images/logo-transparent.png"
+              alt={`${storeName} logo`}
+              width={96}
+              height={63}
+              priority
+              className="h-14 sm:h-16 w-auto object-contain drop-shadow-sm transition-transform duration-300 group-hover:scale-105"
+            />
           </Link>
 
           {/* Desktop CMS Nav Links */}
